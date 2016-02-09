@@ -1,10 +1,14 @@
 module Main where
 
-import Html             exposing (..)
+import Html exposing (..)
+import Signal exposing (Mailbox, mailbox)
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
-main : Html
-main = view initModel
+main : Signal Html
+main = Signal.map view (Signal.foldp update initModel box.signal)
+
+box : Mailbox Action
+box = mailbox NoOp
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type alias Model = {
@@ -22,6 +26,25 @@ initModel = {
   nextId = 0,
   players = []
  }
+
+-- UPDATE --------------------------------------------------------------------------------------------------------------
+type Step =
+  IntroduceYourself
+  | DontCheat
+  | PlayIn3
+  | PlayIn6
+  | PlaySimultan
+
+type Action =
+  NoOp
+  -- | AddPlayer String
+  -- | RemovePlayer Int
+  -- | JumpTo Step
+
+update : Action -> Model -> Model
+update action model =
+  case action of
+    NoOp -> model
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
 view : Model -> Html

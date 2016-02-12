@@ -5,34 +5,14 @@ import Html.Attributes exposing (placeholder, value, disabled)
 import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
+import Model exposing (..)
+
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html
 main = Signal.map (view box.address) (Signal.foldp update initModel box.signal)
 
 box : Mailbox Action
 box = mailbox NoOp
-
--- MODEL ---------------------------------------------------------------------------------------------------------------
-type alias Model = {
-  nextId : Int,
-  playerUrl: String,
-  players : List Player
-}
-
-type alias Player = {
-  id : Int,
-  url : String
-}
-
-initModel : Model
-initModel = {
-  nextId = 2,
-  playerUrl = "",
-  players = [
-    Player 0 "http://localhost:3001"
-    , Player 1 "http://localhost:3002"
-  ]
- }
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------
 type Step =
@@ -68,8 +48,8 @@ view address model =
         button [onClick address AddPlayer] [text "Add"],
         hr [] [],
         div [] [
-          button [] [text "Introduce yourself"],
-          button [] [text "Don't cheat"],
+          button [disabled (List.isEmpty model.players)] [text "Introduce yourself"],
+          button [disabled (List.isEmpty model.players)] [text "Don't cheat"],
           button [disabled (List.length model.players < 3)] [text "Play in 3"],
           button [disabled (List.length model.players < 6)] [text "Play in 6"],
           button [disabled (List.length model.players < 6)] [text "Play simultaneously"]

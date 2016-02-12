@@ -1,10 +1,13 @@
 module CluedoEngine.Model (..) where
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
+type Screen = MainScreen | GameScreen
+
 type alias Model = {
   nextId : Int,
   playerUrl: String,
-  players : List Player
+  players: List Player,
+  mode: Screen
 }
 
 type alias Player = {
@@ -24,5 +27,6 @@ initModel = {
   players = [
     Player 0 "http://localhost:3001"
     , Player 1 "http://localhost:3002"
-  ]
+  ],
+  mode = MainScreen
  }

@@ -1,7 +1,7 @@
 module Main where
 
 import Html exposing (..)
-import Html.Attributes exposing (placeholder, value)
+import Html.Attributes exposing (placeholder, value, disabled)
 import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
@@ -26,12 +26,11 @@ type alias Player = {
 
 initModel : Model
 initModel = {
-  nextId = 3,
+  nextId = 2,
   playerUrl = "",
   players = [
     Player 0 "http://localhost:3001"
     , Player 1 "http://localhost:3002"
-    , Player 2 "http://localhost:3003"
   ]
  }
 
@@ -67,12 +66,12 @@ view address model =
         div [] (List.map (\player -> div [] [text player.url, button [onClick address (RemovePlayer player.id)] [text "Remove"]]) model.players),
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
         button [onClick address AddPlayer] [text "Add"],
-
+        hr [] [],
         div [] [
           button [] [text "Introduce yourself"],
           button [] [text "Don't cheat"],
-          button [] [text "Play in 3"],
-          button [] [text "Play in 6"],
-          button [] [text "Play simultaneously"]
+          button [disabled (List.length model.players < 3)] [text "Play in 3"],
+          button [disabled (List.length model.players < 6)] [text "Play in 6"],
+          button [disabled (List.length model.players < 6)] [text "Play simultaneously"]
         ]
     ]

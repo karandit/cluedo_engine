@@ -1,11 +1,12 @@
 module Main where
 
 import Html exposing (..)
+import Html.Events exposing (onClick)
 import Signal exposing (Mailbox, mailbox)
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html
-main = Signal.map view (Signal.foldp update initModel box.signal)
+main = Signal.map (view box.address) (Signal.foldp update initModel box.signal)
 
 box : Mailbox Action
 box = mailbox NoOp
@@ -23,8 +24,12 @@ type alias Player = {
 
 initModel : Model
 initModel = {
-  nextId = 0,
-  players = []
+  nextId = 3,
+  players = [
+    Player 0 "http://localhost:3001"
+    , Player 1 "http://localhost:3002"
+    , Player 2 "http://localhost:3003"
+  ]
  }
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------
@@ -38,19 +43,20 @@ type Step =
 type Action =
   NoOp
   -- | AddPlayer String
-  -- | RemovePlayer Int
+  | RemovePlayer Int
   -- | JumpTo Step
 
 update : Action -> Model -> Model
 update action model =
   case action of
     NoOp -> model
+    RemovePlayer id -> {model | players <- List.filter (\p -> p.id /= id) model.players}
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
-view : Model -> Html
-view model =
+view : Signal.Address Action -> Model -> Html
+view address model =
     div [] [
-        div [] (List.map (\player -> div [] [text player.url, button [] [text "Remove"]]) model.players),
+        div [] (List.map (\player -> div [] [text player.url, button [onClick address (RemovePlayer player.id)] [text "Remove"]]) model.players),
         input [] [],
         button [] [text "Add"],
         div [] [

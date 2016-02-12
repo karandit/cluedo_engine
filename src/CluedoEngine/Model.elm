@@ -1,4 +1,4 @@
-module Model (..) where
+module CluedoEngine.Model (..) where
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type alias Model = {

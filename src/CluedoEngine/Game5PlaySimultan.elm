@@ -1,6 +1,6 @@
-module Game5PlaySimultan (game) where
+module CluedoEngine.Game5PlaySimultan (game) where
 
-import Model exposing (..)
+import CluedoEngine.Model exposing (..)
 
 game : Game
 game = {

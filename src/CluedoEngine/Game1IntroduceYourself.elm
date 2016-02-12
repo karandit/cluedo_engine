@@ -1,6 +1,6 @@
-module Game1IntroduceYourself (game) where
+module CluedoEngine.Game1IntroduceYourself (game) where
 
-import Model exposing (..)
+import CluedoEngine.Model exposing (..)
 
 game : Game
 game = {

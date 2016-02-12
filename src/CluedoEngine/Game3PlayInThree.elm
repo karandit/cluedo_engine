@@ -1,6 +1,6 @@
-module Game3PlayInThree (game) where
+module CluedoEngine.Game3PlayInThree (game) where
 
-import Model exposing (..)
+import CluedoEngine.Model exposing (..)
 
 game : Game
 game = {

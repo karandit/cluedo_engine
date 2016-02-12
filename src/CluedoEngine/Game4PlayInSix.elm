@@ -1,6 +1,6 @@
-module Game4PlayInSix (game) where
+module CluedoEngine.Game4PlayInSix (game) where
 
-import Model exposing (..)
+import CluedoEngine.Model exposing (..)
 
 game : Game
 game = {

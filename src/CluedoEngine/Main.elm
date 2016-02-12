@@ -1,16 +1,16 @@
-module Main where
+module CluedoEngine.Main where
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder, value, disabled)
 import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
-import Model exposing (..)
-import Game1IntroduceYourself
-import Game2DontCheat
-import Game3PlayInThree
-import Game4PlayInSix
-import Game5PlaySimultan
+import CluedoEngine.Model exposing (..)
+import CluedoEngine.Game1IntroduceYourself as Game1
+import CluedoEngine.Game2DontCheat as Game2
+import CluedoEngine.Game3PlayInThree as Game3
+import CluedoEngine.Game4PlayInSix as Game4
+import CluedoEngine.Game5PlaySimultan as Game5
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html
@@ -21,11 +21,11 @@ box = mailbox NoOp
 
 allGames : List Game
 allGames = [
-  Game1IntroduceYourself.game,
-  Game2DontCheat.game,
-  Game3PlayInThree.game,
-  Game4PlayInSix.game,
-  Game5PlaySimultan.game
+  Game1.game,
+  Game2.game,
+  Game3.game,
+  Game4.game,
+  Game5.game
  ]
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------

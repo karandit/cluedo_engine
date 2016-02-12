@@ -1,6 +1,6 @@
-module Game2DontCheat (game) where
+module CluedoEngine.Game2DontCheat (game) where
 
-import Model exposing (..)
+import CluedoEngine.Model exposing (..)
 
 game : Game
 game = {

@@ -19,6 +19,15 @@ main = Signal.map (view box.address) (Signal.foldp update initModel box.signal)
 box : Mailbox Action
 box = mailbox NoOp
 
+allGames : List Game
+allGames = [
+  Game1IntroduceYourself.game,
+  Game2DontCheat.game,
+  Game3PlayInThree.game,
+  Game4PlayInSix.game,
+  Game5PlaySimultan.game
+ ]
+
 -- UPDATE --------------------------------------------------------------------------------------------------------------
 type Step =
   IntroduceYourself
@@ -45,25 +54,19 @@ update action model =
     RemovePlayer id -> {model | players <- List.filter (\p -> p.id /= id) model.players}
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
-allGames : List Game
-allGames = [
-  Game1IntroduceYourself.game,
-  Game2DontCheat.game,
-  Game3PlayInThree.game,
-  Game4PlayInSix.game,
-  Game5PlaySimultan.game
- ]
-
 view : Signal.Address Action -> Model -> Html
-view address model =
+view address model = viewMainScreen address model
+
+viewMainScreen : Signal.Address Action -> Model -> Html
+viewMainScreen address model =
     div [] [
         div [] (List.map (\player -> div [] [text player.url, button [onClick address (RemovePlayer player.id)] [text "Remove"]]) model.players),
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
         button [onClick address AddPlayer] [text "Add"],
         hr [] [],
-        viewGames allGames model
+        div [] (List.map (viewGameTile model) allGames)
     ]
 
-viewGames : List Game -> Model -> Html
-viewGames games model =
-   div [] (List.map (\game -> button [disabled (game.isDisabled model)] [text game.title]) games)
+viewGameTile : Model -> Game -> Html
+viewGameTile model game =
+  button [disabled (game.isDisabled model)] [text game.title]

@@ -12,6 +12,11 @@ type alias Player = {
   url : String
 }
 
+type alias Game = {
+  title: String,
+  isDisabled: Model -> Bool
+}
+
 initModel : Model
 initModel = {
   nextId = 2,

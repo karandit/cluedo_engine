@@ -6,6 +6,11 @@ import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
 import Model exposing (..)
+import Game1IntroduceYourself
+import Game2DontCheat
+import Game3PlayInThree
+import Game4PlayInSix
+import Game5PlaySimultan
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html
@@ -40,6 +45,15 @@ update action model =
     RemovePlayer id -> {model | players <- List.filter (\p -> p.id /= id) model.players}
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
+allGames : List Game
+allGames = [
+  Game1IntroduceYourself.game,
+  Game2DontCheat.game,
+  Game3PlayInThree.game,
+  Game4PlayInSix.game,
+  Game5PlaySimultan.game
+ ]
+
 view : Signal.Address Action -> Model -> Html
 view address model =
     div [] [
@@ -47,11 +61,9 @@ view address model =
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
         button [onClick address AddPlayer] [text "Add"],
         hr [] [],
-        div [] [
-          button [disabled (List.isEmpty model.players)] [text "Introduce yourself"],
-          button [disabled (List.isEmpty model.players)] [text "Don't cheat"],
-          button [disabled (List.length model.players < 3)] [text "Play in 3"],
-          button [disabled (List.length model.players < 6)] [text "Play in 6"],
-          button [disabled (List.length model.players < 6)] [text "Play simultaneously"]
-        ]
+        viewGames allGames model
     ]
+
+viewGames : List Game -> Model -> Html
+viewGames games model =
+   div [] (List.map (\game -> button [disabled (game.isDisabled model)] [text game.title]) games)

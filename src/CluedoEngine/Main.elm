@@ -41,7 +41,7 @@ type Action =
   | EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
-  | SelectGame
+  | SelectGame Game
   | BackToMain
 
 update : Action -> Model -> Model
@@ -53,7 +53,7 @@ update action model =
                         , playerUrl <- ""
                         , nextId <- model.nextId + 1}
     RemovePlayer id -> {model | players <- List.filter (\p -> p.id /= id) model.players}
-    SelectGame -> {model | mode <- GameScreen }
+    SelectGame game -> {model | mode <- GameScreen game}
     BackToMain -> {model | mode <- MainScreen }
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ view : Signal.Address Action -> Model -> Html
 view address model =
   case model.mode of
     MainScreen -> viewMainScreen address model
-    GameScreen -> viewGameScreen address model
+    GameScreen game -> viewGameScreen address model game
 
 viewMainScreen : Signal.Address Action -> Model -> Html
 viewMainScreen address model =
@@ -75,8 +75,13 @@ viewMainScreen address model =
 
 viewGameTile : Signal.Address Action -> Model -> Game -> Html
 viewGameTile address model game =
-  button [onClick address SelectGame, disabled (game.isDisabled model)] [text game.title]
+  button [onClick address (SelectGame game), disabled (game.isDisabled model.players)] [text game.title]
 
-viewGameScreen : Signal.Address Action -> Model -> Html
-viewGameScreen address model =
-  button [onClick address BackToMain] [text "Back"]
+viewGameScreen : Signal.Address Action -> Model -> Game -> Html
+viewGameScreen address model game =
+  div [] [
+    button [onClick address BackToMain] [text "Back"],
+    span [] [text game.title],
+    hr [] [],
+    game.view model.players
+  ]

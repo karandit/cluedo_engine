@@ -1,7 +1,9 @@
 module CluedoEngine.Model (..) where
 
+import Html exposing (Html)
+
 -- MODEL ---------------------------------------------------------------------------------------------------------------
-type Screen = MainScreen | GameScreen
+type Screen = MainScreen | GameScreen Game
 
 type alias Model = {
   nextId : Int,
@@ -17,7 +19,8 @@ type alias Player = {
 
 type alias Game = {
   title: String,
-  isDisabled: Model -> Bool
+  isDisabled: List Player -> Bool,
+  view: List Player -> Html
 }
 
 initModel : Model

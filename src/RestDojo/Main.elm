@@ -44,15 +44,10 @@ initModel = {
   screen = MainScreen
  }
 
-allGames : List Game
+allGames : List (Game, GameDescriptor)
 allGames = [
-  IntroGame
+  (IntroGame, Game1.gameDescriptor)
  ]
-
-gameToGameDescriptor : Game -> GameDescriptor
-gameToGameDescriptor game =
-  case game of
-    IntroGame -> Game1.gameDescriptor
 
 gameModelToGameDescriptor : GameModel -> GameDescriptor
 gameModelToGameDescriptor gameModel =
@@ -104,11 +99,8 @@ viewMainScreen address model =
         div [] (List.map (viewTile address model) allGames)
     ]
 
-viewTile : Signal.Address Action -> Model -> Game -> Html
-viewTile address model game =
-  let
-    gameDescr = gameToGameDescriptor game
-  in
+viewTile : Signal.Address Action -> Model -> (Game, GameDescriptor) -> Html
+viewTile address model (game, gameDescr) =
     button [onClick address (SelectGame game), disabled (gameDescr.isDisabled model.players)] [text gameDescr.title]
 
 viewGameScreen : Signal.Address Action -> GameModel -> Html

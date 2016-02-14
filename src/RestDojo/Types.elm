@@ -1,4 +1,4 @@
-module CluedoEngine.Types (..) where
+module RestDojo.Types (..) where
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type alias Player = {

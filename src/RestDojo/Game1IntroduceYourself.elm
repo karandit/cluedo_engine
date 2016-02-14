@@ -1,10 +1,10 @@
-module CluedoEngine.Game1IntroduceYourself (gameDescriptor, Model, initModel, Action, update, view) where
+module RestDojo.Game1IntroduceYourself (gameDescriptor, Model, initModel, Action, update, view) where
 
 import Html exposing (Html, text, div, span, button)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick)
 
-import CluedoEngine.Types exposing (..)
+import RestDojo.Types exposing (..)
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
 gameDescriptor : GameDescriptor

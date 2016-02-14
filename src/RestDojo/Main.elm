@@ -1,12 +1,12 @@
-module CluedoEngine.Main where
+module RestDojo.Main where
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder, value, disabled)
 import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
-import CluedoEngine.Types exposing (..)
-import CluedoEngine.Game1IntroduceYourself as Game1
+import RestDojo.Types exposing (..)
+import RestDojo.Game1IntroduceYourself as Game1
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html

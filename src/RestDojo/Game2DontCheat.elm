@@ -1,6 +1,6 @@
-module CluedoEngine.Game2DontCheat (gameDescriptor) where
+module RestDojo.Game2DontCheat (gameDescriptor) where
 
-import CluedoEngine.Types exposing (..)
+import RestDojo.Types exposing (..)
 
 gameDescriptor : GameDescriptor
 gameDescriptor = {

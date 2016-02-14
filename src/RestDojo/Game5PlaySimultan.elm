@@ -1,6 +1,6 @@
-module CluedoEngine.Game5PlaySimultan (gameDescriptor) where
+module RestDojo.Game5PlaySimultan (gameDescriptor) where
 
-import CluedoEngine.Types exposing (..)
+import RestDojo.Types exposing (..)
 
 gameDescriptor : GameDescriptor
 gameDescriptor = {

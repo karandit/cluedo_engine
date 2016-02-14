@@ -1,6 +1,6 @@
-module CluedoEngine.Game4PlayInSix (gameDescriptor) where
+module RestDojo.Game4PlayInSix (gameDescriptor) where
 
-import CluedoEngine.Types exposing (..)
+import RestDojo.Types exposing (..)
 
 gameDescriptor : GameDescriptor
 gameDescriptor = {

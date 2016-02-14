@@ -1,6 +1,6 @@
-module CluedoEngine.Game3PlayInThree (gameDescriptor) where
+module RestDojo.Game3PlayInThree (gameDescriptor) where
 
-import CluedoEngine.Types exposing (..)
+import RestDojo.Types exposing (..)
 
 gameDescriptor : GameDescriptor
 gameDescriptor = {

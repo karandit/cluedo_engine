@@ -1,4 +1,4 @@
-module RestDojo.Game2DontCheat (gameDescriptor) where
+module RestDojo.Games.Cluedo.GameDontCheat (gameDescriptor) where
 
 import RestDojo.Types exposing (..)
 

@@ -1,4 +1,4 @@
-module RestDojo.Game3PlayInThree (gameDescriptor) where
+module RestDojo.Games.Cluedo.GamePlayInThree (gameDescriptor) where
 
 import RestDojo.Types exposing (..)
 

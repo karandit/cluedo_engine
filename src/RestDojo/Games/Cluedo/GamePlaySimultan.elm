@@ -1,9 +1,9 @@
-module RestDojo.Game4PlayInSix (gameDescriptor) where
+module RestDojo.Games.Cluedo.GamePlaySimultan (gameDescriptor) where
 
 import RestDojo.Types exposing (..)
 
 gameDescriptor : GameDescriptor
 gameDescriptor = {
-  title = "Play in 6",
+  title = "Play simultaneously",
   isDisabled = \players -> List.length players < 6
  }

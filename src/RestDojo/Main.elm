@@ -6,7 +6,7 @@ import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
 import RestDojo.Types exposing (..)
-import RestDojo.Game1IntroduceYourself as Game1
+import RestDojo.Games.GameIntroduceYourself as Game1
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html

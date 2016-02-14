@@ -6,7 +6,7 @@ type alias Player = {
   url : String
 }
 
-type alias Game = {
+type alias GameDescriptor = {
   title: String,
   isDisabled: List Player -> Bool
 }

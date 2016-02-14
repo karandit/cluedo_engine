@@ -49,15 +49,15 @@ allGameTypes = [
   IntroGame
  ]
 
-gameTypeToGame : GameType -> Game
-gameTypeToGame gameType =
+gameTypeToGameDescriptor : GameType -> GameDescriptor
+gameTypeToGameDescriptor gameType =
   case gameType of
-    IntroGame -> Game1.game
+    IntroGame -> Game1.gameDescriptor
 
-gameModelToGame : GameModel -> Game
-gameModelToGame gameModel =
+gameModelToGameDescriptor : GameModel -> GameDescriptor
+gameModelToGameDescriptor gameModel =
   case gameModel of
-    IntroGameModel _ -> Game1.game
+    IntroGameModel _ -> Game1.gameDescriptor
 
 initGameModel : List Player -> GameType -> GameModel
 initGameModel players gameType =
@@ -107,18 +107,18 @@ viewMainScreen address model =
 viewTile : Signal.Address Action -> Model -> GameType -> Html
 viewTile address model gameType =
   let
-    game = gameTypeToGame gameType
+    gameDescr = gameTypeToGameDescriptor gameType
   in
-    button [onClick address (SelectGame gameType), disabled (game.isDisabled model.players)] [text game.title]
+    button [onClick address (SelectGame gameType), disabled (gameDescr.isDisabled model.players)] [text gameDescr.title]
 
 viewGameScreen : Signal.Address Action -> GameModel -> Html
 viewGameScreen address gameModel =
   let
-    game = gameModelToGame gameModel
+    gameDescr = gameModelToGameDescriptor gameModel
   in
     div [] [
       button [onClick address BackToMain] [text "Back"],
-      span [] [text game.title],
+      span [] [text gameDescr.title],
       hr [] [],
       viewGame address gameModel
     ]

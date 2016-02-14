@@ -1,4 +1,4 @@
-module CluedoEngine.Game1IntroduceYourself (game, Model, initModel, Action, update, view) where
+module CluedoEngine.Game1IntroduceYourself (gameDescriptor, Model, initModel, Action, update, view) where
 
 import Html exposing (Html, text, div, span, button)
 import Html.Attributes exposing (disabled)
@@ -7,8 +7,8 @@ import Html.Events exposing (onClick)
 import CluedoEngine.Model exposing (..)
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
-game : Game
-game = {
+gameDescriptor : GameDescriptor
+gameDescriptor = {
   title = "Introduce yourself",
   isDisabled = List.isEmpty
  }

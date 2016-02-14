@@ -1,9 +1,9 @@
-module CluedoEngine.Game2DontCheat (game) where
+module CluedoEngine.Game2DontCheat (gameDescriptor) where
 
 import CluedoEngine.Model exposing (..)
 
-game : Game
-game = {
+gameDescriptor : GameDescriptor
+gameDescriptor = {
   title = "Don't cheat",
   isDisabled = \players -> List.isEmpty players
  }

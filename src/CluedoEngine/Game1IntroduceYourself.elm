@@ -1,20 +1,50 @@
-module CluedoEngine.Game1IntroduceYourself (game) where
+module CluedoEngine.Game1IntroduceYourself (game, Model, initModel, Action, update, view) where
 
-import Html exposing (Html, text, div, span)
+import Html exposing (Html, text, div, span, button)
+import Html.Attributes exposing (disabled)
+import Html.Events exposing (onClick)
 
 import CluedoEngine.Model exposing (..)
 
+--PUBLIC ---------------------------------------------------------------------------------------------------------------
 game : Game
 game = {
   title = "Introduce yourself",
-  isDisabled = \players -> List.isEmpty players,
-  view = view
+  isDisabled = List.isEmpty
  }
 
-view : List Player -> Html
-view players =
-  div [] (List.map viewPlayer players)
+--MODEL-----------------------------------------------------------------------------------------------------------------
+type State = None | Waiting | Success String | Error String
 
-viewPlayer : Player -> Html
-viewPlayer player =
-  div [] [text player.url]
+type alias Model = {
+  started: Bool,
+  playerStates: List (Player, State)
+ }
+
+initModel : List Player -> Model
+initModel players = {
+  started = False,
+  playerStates = List.map (\p -> (p, None)) players
+ }
+
+--UPDATE----------------------------------------------------------------------------------------------------------------
+type Action =
+  PushStart
+
+update : Action -> Model -> Model
+update action model =
+  case action of
+    PushStart -> {model | started <- True
+                        , playerStates <- List.map (\(p, _) -> (p, Waiting)) model.playerStates}
+
+--VIEW------------------------------------------------------------------------------------------------------------------
+view : Signal.Address Action -> Model -> Html
+view address model =
+  div [] [
+    button [onClick address PushStart, disabled model.started] [text "Start"],
+    div [] (List.map viewPlayerState model.playerStates)
+  ]
+
+viewPlayerState : (Player, State) -> Html
+viewPlayerState (player, state) =
+  div [] [text player.url, text "    :    ", text (toString state)]

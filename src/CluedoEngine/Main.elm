@@ -7,10 +7,6 @@ import Signal exposing (Mailbox, mailbox)
 
 import CluedoEngine.Model exposing (..)
 import CluedoEngine.Game1IntroduceYourself as Game1
-import CluedoEngine.Game2DontCheat as Game2
-import CluedoEngine.Game3PlayInThree as Game3
-import CluedoEngine.Game4PlayInSix as Game4
-import CluedoEngine.Game5PlaySimultan as Game5
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html
@@ -19,30 +15,64 @@ main = Signal.map (view box.address) (Signal.foldp update initModel box.signal)
 box : Mailbox Action
 box = mailbox NoOp
 
-allGames : List Game
-allGames = [
-  Game1.game,
-  Game2.game,
-  Game3.game,
-  Game4.game,
-  Game5.game
+-- MODEL ---------------------------------------------------------------------------------------------------------------
+type GameType =
+  IntroGame
+
+type GameModel =
+  IntroGameModel Game1.Model
+
+type Screen  =
+  MainScreen
+  | GameScreen GameModel
+
+type alias Model = {
+  nextId : Int,
+  playerUrl: String,
+  players: List Player,
+  screen: Screen
+}
+
+initModel : Model
+initModel = {
+  nextId = 2,
+  playerUrl = "",
+  players = [
+    Player 0 "http://localhost:3001"
+    , Player 1 "http://localhost:3002"
+  ],
+  screen = MainScreen
+ }
+
+allGameTypes : List GameType
+allGameTypes = [
+  IntroGame
  ]
 
--- UPDATE --------------------------------------------------------------------------------------------------------------
-type Step =
-  IntroduceYourself
-  | DontCheat
-  | PlayIn3
-  | PlayIn6
-  | PlaySimultan
+gameTypeToGame : GameType -> Game
+gameTypeToGame gameType =
+  case gameType of
+    IntroGame -> Game1.game
 
+gameModelToGame : GameModel -> Game
+gameModelToGame gameModel =
+  case gameModel of
+    IntroGameModel _ -> Game1.game
+
+initGameModel : List Player -> GameType -> GameModel
+initGameModel players gameType =
+  case gameType of
+    IntroGame -> IntroGameModel (Game1.initModel players)
+
+-- UPDATE --------------------------------------------------------------------------------------------------------------
 type Action =
   NoOp
   | EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
-  | SelectGame Game
+  | SelectGame GameType
   | BackToMain
+  | PlayIntroGame Game1.Model Game1.Action
 
 update : Action -> Model -> Model
 update action model =
@@ -53,15 +83,16 @@ update action model =
                         , playerUrl <- ""
                         , nextId <- model.nextId + 1}
     RemovePlayer id -> {model | players <- List.filter (\p -> p.id /= id) model.players}
-    SelectGame game -> {model | mode <- GameScreen game}
-    BackToMain -> {model | mode <- MainScreen }
+    SelectGame gameType -> {model | screen <- GameScreen (initGameModel model.players gameType)}
+    PlayIntroGame gameModel action' -> {model | screen <- GameScreen (IntroGameModel (Game1.update action' gameModel))}
+    BackToMain -> {model | screen <- MainScreen }
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
 view : Signal.Address Action -> Model -> Html
 view address model =
-  case model.mode of
-    MainScreen -> viewMainScreen address model
-    GameScreen game -> viewGameScreen address model game
+  case model.screen of
+    MainScreen        -> viewMainScreen address model
+    GameScreen store  -> viewGameScreen address store
 
 viewMainScreen : Signal.Address Action -> Model -> Html
 viewMainScreen address model =
@@ -70,18 +101,29 @@ viewMainScreen address model =
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
         button [onClick address AddPlayer] [text "Add"],
         hr [] [],
-        div [] (List.map (viewGameTile address model) allGames)
+        div [] (List.map (viewTile address model) allGameTypes)
     ]
 
-viewGameTile : Signal.Address Action -> Model -> Game -> Html
-viewGameTile address model game =
-  button [onClick address (SelectGame game), disabled (game.isDisabled model.players)] [text game.title]
+viewTile : Signal.Address Action -> Model -> GameType -> Html
+viewTile address model gameType =
+  let
+    game = gameTypeToGame gameType
+  in
+    button [onClick address (SelectGame gameType), disabled (game.isDisabled model.players)] [text game.title]
 
-viewGameScreen : Signal.Address Action -> Model -> Game -> Html
-viewGameScreen address model game =
-  div [] [
-    button [onClick address BackToMain] [text "Back"],
-    span [] [text game.title],
-    hr [] [],
-    game.view model.players
-  ]
+viewGameScreen : Signal.Address Action -> GameModel -> Html
+viewGameScreen address gameModel =
+  let
+    game = gameModelToGame gameModel
+  in
+    div [] [
+      button [onClick address BackToMain] [text "Back"],
+      span [] [text game.title],
+      hr [] [],
+      viewGame address gameModel
+    ]
+
+viewGame : Signal.Address Action -> GameModel -> Html
+viewGame address gameModel =
+  case gameModel of
+    IntroGameModel model -> Game1.view (Signal.forwardTo address (PlayIntroGame model)) model

@@ -1,6 +1,6 @@
 module CluedoEngine.Game2DontCheat (gameDescriptor) where
 
-import CluedoEngine.Model exposing (..)
+import CluedoEngine.Types exposing (..)
 
 gameDescriptor : GameDescriptor
 gameDescriptor = {

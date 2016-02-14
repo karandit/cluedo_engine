@@ -1,4 +1,4 @@
-module CluedoEngine.Model (..) where
+module CluedoEngine.Types (..) where
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type alias Player = {

@@ -4,7 +4,7 @@ import Html exposing (Html, text, div, span, button)
 import Html.Attributes exposing (disabled)
 import Html.Events exposing (onClick)
 
-import CluedoEngine.Model exposing (..)
+import CluedoEngine.Types exposing (..)
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
 gameDescriptor : GameDescriptor

@@ -5,7 +5,7 @@ import Html.Attributes exposing (placeholder, value, disabled)
 import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, mailbox)
 
-import CluedoEngine.Model exposing (..)
+import CluedoEngine.Types exposing (..)
 import CluedoEngine.Game1IntroduceYourself as Game1
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------

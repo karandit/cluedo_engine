@@ -34,8 +34,8 @@ type Action =
 update : Action -> Model -> Model
 update action model =
   case action of
-    PushStart -> {model | started <- True
-                        , playerStates <- List.map (\(p, _) -> (p, Waiting)) model.playerStates}
+    PushStart -> {model | started = True
+                        , playerStates = List.map (\(p, _) -> (p, Waiting)) model.playerStates}
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Signal.Address Action -> Model -> Html

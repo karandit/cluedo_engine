@@ -73,14 +73,14 @@ update : Action -> Model -> Model
 update action model =
   case action of
     NoOp -> model
-    EditNewPlayerUrl url -> {model | playerUrl <- url}
-    AddPlayer -> {model | players <-  (Player model.nextId model.playerUrl) :: model.players
-                        , playerUrl <- ""
-                        , nextId <- model.nextId + 1}
-    RemovePlayer id -> {model | players <- List.filter (\p -> p.id /= id) model.players}
-    SelectGame gameType -> {model | screen <- GameScreen (initGameModel model.players gameType)}
-    PlayIntroGame gameModel action' -> {model | screen <- GameScreen (IntroGameModel (Game1.update action' gameModel))}
-    BackToMain -> {model | screen <- MainScreen }
+    EditNewPlayerUrl url -> {model | playerUrl = url}
+    AddPlayer -> {model | players =  (Player model.nextId model.playerUrl) :: model.players
+                        , playerUrl = ""
+                        , nextId = model.nextId + 1}
+    RemovePlayer id -> {model | players = List.filter (\p -> p.id /= id) model.players}
+    SelectGame gameType -> {model | screen = GameScreen (initGameModel model.players gameType)}
+    PlayIntroGame gameModel action' -> {model | screen = GameScreen (IntroGameModel (Game1.update action' gameModel))}
+    BackToMain -> {model | screen = MainScreen }
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
 view : Signal.Address Action -> Model -> Html

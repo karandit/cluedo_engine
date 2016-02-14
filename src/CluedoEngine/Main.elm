@@ -16,7 +16,7 @@ box : Mailbox Action
 box = mailbox NoOp
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
-type GameType =
+type Game =
   IntroGame
 
 type GameModel =
@@ -44,14 +44,14 @@ initModel = {
   screen = MainScreen
  }
 
-allGameTypes : List GameType
-allGameTypes = [
+allGames : List Game
+allGames = [
   IntroGame
  ]
 
-gameTypeToGameDescriptor : GameType -> GameDescriptor
-gameTypeToGameDescriptor gameType =
-  case gameType of
+gameToGameDescriptor : Game -> GameDescriptor
+gameToGameDescriptor game =
+  case game of
     IntroGame -> Game1.gameDescriptor
 
 gameModelToGameDescriptor : GameModel -> GameDescriptor
@@ -59,9 +59,9 @@ gameModelToGameDescriptor gameModel =
   case gameModel of
     IntroGameModel _ -> Game1.gameDescriptor
 
-initGameModel : List Player -> GameType -> GameModel
-initGameModel players gameType =
-  case gameType of
+initGameModel : List Player -> Game -> GameModel
+initGameModel players game =
+  case game of
     IntroGame -> IntroGameModel (Game1.initModel players)
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ type Action =
   | EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
-  | SelectGame GameType
+  | SelectGame Game
   | BackToMain
   | PlayIntroGame Game1.Model Game1.Action
 
@@ -101,15 +101,15 @@ viewMainScreen address model =
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
         button [onClick address AddPlayer] [text "Add"],
         hr [] [],
-        div [] (List.map (viewTile address model) allGameTypes)
+        div [] (List.map (viewTile address model) allGames)
     ]
 
-viewTile : Signal.Address Action -> Model -> GameType -> Html
-viewTile address model gameType =
+viewTile : Signal.Address Action -> Model -> Game -> Html
+viewTile address model game =
   let
-    gameDescr = gameTypeToGameDescriptor gameType
+    gameDescr = gameToGameDescriptor game
   in
-    button [onClick address (SelectGame gameType), disabled (gameDescr.isDisabled model.players)] [text gameDescr.title]
+    button [onClick address (SelectGame game), disabled (gameDescr.isDisabled model.players)] [text gameDescr.title]
 
 viewGameScreen : Signal.Address Action -> GameModel -> Html
 viewGameScreen address gameModel =

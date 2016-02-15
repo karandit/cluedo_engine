@@ -16,9 +16,6 @@ box : Mailbox Action
 box = mailbox NoOp
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
-type Game =
-  IntroGame
-
 type GameModel =
   IntroGameModel Game1.Model
 
@@ -44,9 +41,9 @@ initModel = {
   screen = MainScreen
  }
 
-allGames : List (Game, GameDescriptor GameModel)
+allGames : List (GameDescriptor GameModel)
 allGames = [
-  (IntroGame, Game1.gameDescriptor IntroGameModel)
+  Game1.gameDescriptor IntroGameModel
  ]
 
 gameModelToGameDescriptor : GameModel -> GameDescriptor GameModel
@@ -91,7 +88,7 @@ viewMainScreen address model =
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
         button [onClick address AddPlayer] [text "Add"],
         hr [] [],
-        div [] (List.map (\(_, gameDescr) -> viewTile address model gameDescr) allGames)
+        div [] (List.map (viewTile address model) allGames)
     ]
 
 viewTile : Signal.Address Action -> Model -> GameDescriptor GameModel -> Html

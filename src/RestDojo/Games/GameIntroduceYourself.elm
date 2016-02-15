@@ -7,10 +7,11 @@ import Html.Events exposing (onClick)
 import RestDojo.Types exposing (..)
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
-gameDescriptor : GameDescriptor
-gameDescriptor = {
+gameDescriptor : (Model -> a) -> GameDescriptor a
+gameDescriptor wrapper = {
   title = "Introduce yourself",
-  isDisabled = List.isEmpty
+  isDisabled = List.isEmpty,
+  initModel = \players -> wrapper (initModel players)
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------

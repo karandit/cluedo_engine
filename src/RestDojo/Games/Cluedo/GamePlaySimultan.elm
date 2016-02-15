@@ -2,8 +2,9 @@ module RestDojo.Games.Cluedo.GamePlaySimultan (gameDescriptor) where
 
 import RestDojo.Types exposing (..)
 
-gameDescriptor : GameDescriptor
-gameDescriptor = {
+gameDescriptor : a -> GameDescriptor a
+gameDescriptor factory = {
   title = "Play simultaneously",
-  isDisabled = \players -> List.length players < 6
+  isDisabled = \players -> List.length players < 6,
+  initModel = \players -> factory
  }

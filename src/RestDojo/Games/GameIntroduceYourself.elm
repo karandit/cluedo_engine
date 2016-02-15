@@ -1,4 +1,4 @@
-module RestDojo.Games.GameIntroduceYourself (gameDescriptor, Model, initModel, Action, update, view) where
+module RestDojo.Games.GameIntroduceYourself (gameDescriptor, Model, Action, update, view) where
 
 import Html exposing (Html, text, div, span, button)
 import Html.Attributes exposing (disabled)

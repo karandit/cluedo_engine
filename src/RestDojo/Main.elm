@@ -19,14 +19,16 @@ box = mailbox NoOp
 type GameModel =
   IntroGameModel Game1.Model
 
-allGames : List (GameDescriptor GameModel)
+type alias Game = GameDescriptor GameModel
+
+allGames : List Game
 allGames = [
   Game1.gameDescriptor IntroGameModel
  ]
 
 type Screen  =
   MainScreen
-  | GameScreen (GameDescriptor GameModel, GameModel)
+  | GameScreen (Game, GameModel)
 
 type alias Model = {
   nextId : Int,
@@ -39,10 +41,7 @@ initModel : Model
 initModel = {
   nextId = 2,
   playerUrl = "",
-  players = [
-    Player 0 "http://localhost:3001"
-    , Player 1 "http://localhost:3002"
-  ],
+  players = [Player 0 "http://localhost:3001", Player 1 "http://localhost:3002"],
   screen = MainScreen
  }
 
@@ -52,9 +51,9 @@ type Action =
   | EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
-  | SelectGame (GameDescriptor GameModel)
+  | SelectGame Game
   | BackToMain
-  | PlayIntroGame (GameDescriptor GameModel) Game1.Model Game1.Action
+  | PlayIntroGame Game Game1.Model Game1.Action
 
 update : Action -> Model -> Model
 update action model =
@@ -65,16 +64,16 @@ update action model =
                         , playerUrl = ""
                         , nextId = model.nextId + 1}
     RemovePlayer id -> {model | players = List.filter (\p -> p.id /= id) model.players}
-    SelectGame gameDescr -> {model | screen = GameScreen (gameDescr, gameDescr.initModel model.players)}
-    PlayIntroGame gameDescr gameModel action' -> {model | screen = GameScreen (gameDescr, IntroGameModel (Game1.update action' gameModel))}
-    BackToMain -> {model | screen = MainScreen }
+    SelectGame game                       -> {model | screen = GameScreen (game, game.initModel model.players)}
+    PlayIntroGame game gameModel action'  -> {model | screen = GameScreen (game, IntroGameModel (Game1.update action' gameModel))}
+    BackToMain                            -> {model | screen = MainScreen }
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
 view : Signal.Address Action -> Model -> Html
 view address model =
   case model.screen of
     MainScreen -> viewMainScreen address model
-    GameScreen (gameDescr, gameModel) -> viewGameScreen address gameDescr gameModel
+    GameScreen (game, gameModel) -> viewGameScreen address game gameModel
 
 viewMainScreen : Signal.Address Action -> Model -> Html
 viewMainScreen address model =
@@ -86,20 +85,20 @@ viewMainScreen address model =
         div [] (List.map (viewTile address model) allGames)
     ]
 
-viewTile : Signal.Address Action -> Model -> GameDescriptor GameModel -> Html
-viewTile address model gameDescr =
-    button [onClick address (SelectGame gameDescr), disabled (gameDescr.isDisabled model.players)] [text gameDescr.title]
+viewTile : Signal.Address Action -> Model -> Game -> Html
+viewTile address model game =
+    button [onClick address (SelectGame game), disabled (game.isDisabled model.players)] [text game.title]
 
-viewGameScreen : Signal.Address Action -> GameDescriptor GameModel -> GameModel -> Html
-viewGameScreen address gameDescr gameModel =
+viewGameScreen : Signal.Address Action -> Game -> GameModel -> Html
+viewGameScreen address game gameModel =
   div [] [
     button [onClick address BackToMain] [text "Back"],
-    span [] [text gameDescr.title],
+    span [] [text game.title],
     hr [] [],
-    viewGame address gameDescr gameModel
+    viewGame address game gameModel
   ]
 
-viewGame : Signal.Address Action -> GameDescriptor GameModel -> GameModel -> Html
-viewGame address gameDescr gameModel =
+viewGame : Signal.Address Action -> Game -> GameModel -> Html
+viewGame address game gameModel =
   case gameModel of
-    IntroGameModel model -> Game1.view (Signal.forwardTo address (PlayIntroGame gameDescr model)) model
+    IntroGameModel model -> Game1.view (Signal.forwardTo address (PlayIntroGame game model)) model

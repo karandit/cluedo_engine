@@ -1,4 +1,4 @@
-module RestDojo.Types (..) where
+module RestDojo.Types exposing (..)
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type alias Player = {

@@ -1,24 +1,25 @@
-module RestDojo.Main where
+module RestDojo.Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder, value, disabled)
 import Html.Events exposing (onClick, on, targetValue)
-import Signal exposing (Mailbox, mailbox)
+import Html.App
+
+import Json.Decode as Json
 
 import RestDojo.Types exposing (..)
 import RestDojo.Games.GameIntroduceYourself as Game1
 
-import Http
-import Task exposing (..)
-
 -- MAIN ----------------------------------------------------------------------------------------------------------------
-main : Signal Html
-main = Signal.map (view box.address) (Signal.foldp update initModel box.signal)
-
-box : Mailbox Action
-box = mailbox NoOp
+main : Program Never
+main =
+      Html.App.beginnerProgram {
+        model = initModel,
+        update = update,
+        view = view}
 
 -- PORTS ---------------------------------------------------------------------------------------------------------------
+{-
 type Request =
   -- NoRequest
   -- |
@@ -44,7 +45,7 @@ getResult res =
   case res of
     Ok name -> name
     Err error -> error
-
+-}
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type GameModel =
   IntroGameModel Game1.Model
@@ -76,18 +77,18 @@ initModel = {
  }
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------
-type Action =
+type Msg =
   NoOp
   | EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
   | SelectGame Game
   | BackToMain
-  | PlayIntroGame Game Game1.Model Game1.Action
+  | PlayIntroGame Game Game1.Model Game1.Msg
 
-update : Action -> Model -> Model
-update action model =
-  case action of
+update : Msg -> Model -> Model
+update msg model =
+  case msg of
     NoOp -> model
     EditNewPlayerUrl url -> {model | playerUrl = url}
     AddPlayer -> {model | players =  (Player model.nextId model.playerUrl) :: model.players
@@ -99,37 +100,36 @@ update action model =
     BackToMain                            -> {model | screen = MainScreen }
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
-view : Signal.Address Action -> Model -> Html
-view address model =
+view : Model -> Html Msg
+view model =
   case model.screen of
-    MainScreen -> viewMainScreen address model
-    GameScreen (game, gameModel) -> viewGameScreen address game gameModel
+    MainScreen -> viewMainScreen model
+    GameScreen (game, gameModel) -> viewGameScreen game gameModel
 
-viewMainScreen : Signal.Address Action -> Model -> Html
-viewMainScreen address model =
+viewMainScreen : Model -> Html Msg
+viewMainScreen model =
     div [] [
-        div [] (List.map (\player -> div [] [text player.url, button [onClick address (RemovePlayer player.id)] [text "Remove"]]) model.players),
-        input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
-        -- button [onClick address AddPlayer] [text "Add"],
-        button [onClick requests.address GetName] [text "Add"],
+        div [] (List.map (\player -> div [] [text player.url, button [onClick (RemovePlayer player.id)] [text "Remove"]]) model.players),
+        input [placeholder "URL", value model.playerUrl, on "input" (Json.map EditNewPlayerUrl targetValue)] [],
+        button [onClick AddPlayer] [text "Add"],
         hr [] [],
-        div [] (List.map (viewTile address model) allGames)
+        div [] (List.map (viewTile model) allGames)
     ]
 
-viewTile : Signal.Address Action -> Model -> Game -> Html
-viewTile address model game =
-    button [onClick address (SelectGame game), disabled (game.isDisabled model.players)] [text game.title]
+viewTile : Model -> Game -> Html Msg
+viewTile model game =
+    button [onClick (SelectGame game), disabled (game.isDisabled model.players)] [text game.title]
 
-viewGameScreen : Signal.Address Action -> Game -> GameModel -> Html
-viewGameScreen address game gameModel =
+viewGameScreen : Game -> GameModel -> Html Msg
+viewGameScreen game gameModel =
   div [] [
-    button [onClick address BackToMain] [text "Back"],
+    button [onClick BackToMain] [text "Back"],
     span [] [text game.title],
     hr [] [],
-    viewGame address game gameModel
+    viewGame game gameModel
   ]
 
-viewGame : Signal.Address Action -> Game -> GameModel -> Html
-viewGame address game gameModel =
+viewGame : Game -> GameModel -> Html Msg
+viewGame game gameModel =
   case gameModel of
-    IntroGameModel model -> Game1.view (Signal.forwardTo address (PlayIntroGame game model)) model
+    IntroGameModel model -> Html.App.map (PlayIntroGame game model) (Game1.view model)

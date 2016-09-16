@@ -1,4 +1,4 @@
-module RestDojo.Games.GameIntroduceYourself (gameDescriptor, Model, Action, update, view) where
+module RestDojo.Games.GameIntroduceYourself exposing (gameDescriptor, Model, Msg, update, view)
 
 import Html exposing (Html, text, div, span, button)
 import Html.Attributes exposing (disabled)
@@ -29,23 +29,23 @@ initModel players = {
  }
 
 --UPDATE----------------------------------------------------------------------------------------------------------------
-type Action =
+type Msg =
   PushStart
 
-update : Action -> Model -> Model
-update action model =
-  case action of
+update : Msg -> Model -> Model
+update msg model =
+  case msg of
     PushStart -> {model | started = True
                         , playerStates = List.map (\(p, _) -> (p, Waiting)) model.playerStates}
 
 --VIEW------------------------------------------------------------------------------------------------------------------
-view : Signal.Address Action -> Model -> Html
-view address model =
+view : Model -> Html Msg
+view model =
   div [] [
-    button [onClick address PushStart, disabled model.started] [text "Start"],
+    button [onClick PushStart, disabled model.started] [text "Start"],
     div [] (List.map viewPlayerState model.playerStates)
   ]
 
-viewPlayerState : (Player, State) -> Html
+viewPlayerState : (Player, State) -> Html Msg
 viewPlayerState (player, state) =
   div [] [text player.url, text "    :    ", text (toString state)]

@@ -8,12 +8,42 @@ import Signal exposing (Mailbox, mailbox)
 import RestDojo.Types exposing (..)
 import RestDojo.Games.GameIntroduceYourself as Game1
 
+import Http
+import Task exposing (..)
+
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Signal Html
 main = Signal.map (view box.address) (Signal.foldp update initModel box.signal)
 
 box : Mailbox Action
 box = mailbox NoOp
+
+-- PORTS ---------------------------------------------------------------------------------------------------------------
+type Request =
+  -- NoRequest
+  -- |
+     GetName
+
+requests : Mailbox Request
+requests = mailbox GetName
+
+port backend : Signal (Task String String)
+port backend =
+  Signal.map apiCall requests.signal
+
+apiCall : Request -> Task String String
+apiCall req =
+  case req of
+    -- NoRequest -> succeed ""
+    GetName -> Http.getString "http://localhost:3001/namea" |> mapError (\err -> "Wrong")
+          -- `andThen` (\result -> Signal.send box.address (EditNewPlayerUrl (getResult result)))
+          `andThen` (\task -> Signal.send box.address (EditNewPlayerUrl "asd"))
+
+getResult : Result String String -> String
+getResult res =
+  case res of
+    Ok name -> name
+    Err error -> error
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type GameModel =
@@ -80,7 +110,8 @@ viewMainScreen address model =
     div [] [
         div [] (List.map (\player -> div [] [text player.url, button [onClick address (RemovePlayer player.id)] [text "Remove"]]) model.players),
         input [placeholder "URL", value model.playerUrl, on "input" targetValue (Signal.message address << EditNewPlayerUrl)] [],
-        button [onClick address AddPlayer] [text "Add"],
+        -- button [onClick address AddPlayer] [text "Add"],
+        button [onClick requests.address GetName] [text "Add"],
         hr [] [],
         div [] (List.map (viewTile address model) allGames)
     ]

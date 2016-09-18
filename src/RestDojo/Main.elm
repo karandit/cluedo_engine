@@ -13,39 +13,12 @@ import RestDojo.Games.GameIntroduceYourself as Game1
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Program Never
 main =
-      Html.App.beginnerProgram {
-        model = initModel,
+      Html.App.program {
+        init = initModel,
         update = update,
-        view = view}
+        view = view,
+        subscriptions = \_ -> Sub.none}
 
--- PORTS ---------------------------------------------------------------------------------------------------------------
-{-
-type Request =
-  -- NoRequest
-  -- |
-     GetName
-
-requests : Mailbox Request
-requests = mailbox GetName
-
-port backend : Signal (Task String String)
-port backend =
-  Signal.map apiCall requests.signal
-
-apiCall : Request -> Task String String
-apiCall req =
-  case req of
-    -- NoRequest -> succeed ""
-    GetName -> Http.getString "http://localhost:3001/namea" |> mapError (\err -> "Wrong")
-          -- `andThen` (\result -> Signal.send box.address (EditNewPlayerUrl (getResult result)))
-          `andThen` (\task -> Signal.send box.address (EditNewPlayerUrl "asd"))
-
-getResult : Result String String -> String
-getResult res =
-  case res of
-    Ok name -> name
-    Err error -> error
--}
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type GameModel =
   IntroGameModel Game1.Model
@@ -68,36 +41,39 @@ type alias Model = {
   screen: Screen
 }
 
-initModel : Model
-initModel = {
-  nextId = 2,
+initModel : (Model, Cmd Msg)
+initModel = ({
+  nextId = 3,
   playerUrl = "",
-  players = [Player 0 "http://localhost:3001", Player 1 "http://localhost:3002"],
+  players = [Player 0 "http://localhost:3001", Player 1 "http://localhost:3002", Player 2 "http://localhost:3003"],
   screen = MainScreen
- }
+ }, Cmd.none)
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------
 type Msg =
-  NoOp
-  | EditNewPlayerUrl String
+  EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
   | SelectGame Game
   | BackToMain
   | PlayIntroGame Game Game1.Model Game1.Msg
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
-    NoOp -> model
-    EditNewPlayerUrl url -> {model | playerUrl = url}
-    AddPlayer -> {model | players =  (Player model.nextId model.playerUrl) :: model.players
-                        , playerUrl = ""
-                        , nextId = model.nextId + 1}
-    RemovePlayer id -> {model | players = List.filter (\p -> p.id /= id) model.players}
-    SelectGame game                       -> {model | screen = GameScreen (game, game.initModel model.players)}
-    PlayIntroGame game gameModel action'  -> {model | screen = GameScreen (game, IntroGameModel (Game1.update action' gameModel))}
-    BackToMain                            -> {model | screen = MainScreen }
+  case Debug.log "Main" msg of
+    EditNewPlayerUrl url                  -> {model | playerUrl = url} ! []
+    AddPlayer                             -> {model | players =  (Player model.nextId model.playerUrl) :: model.players
+                                                    , playerUrl = ""
+                                                    , nextId = model.nextId + 1} ! []
+    RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
+    SelectGame game                       -> {model | screen = GameScreen (game, game.initModel model.players)} ! []
+    PlayIntroGame game gameModel msg'  ->
+      let
+        (newGameModel, newGameCmd) = (Game1.update msg' gameModel)
+        newModel = {model | screen = GameScreen (game, IntroGameModel newGameModel)}
+      in
+        (newModel, Cmd.map (PlayIntroGame game newGameModel) newGameCmd)
+    BackToMain                            -> {model | screen = MainScreen } ! []
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg

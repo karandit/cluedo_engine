@@ -25,9 +25,9 @@ type GameModel =
   IntroGameModel Game1.Model
   | DontCheatGameModel Game2.Model
 
-type alias Game = GameDescriptor GameModel
+type alias Tile = GameDescriptor GameModel
 
-allGames : List Game
+allGames : List Tile
 allGames = [
   Game1.gameDescriptor IntroGameModel
   , Game2.gameDescriptor DontCheatGameModel
@@ -57,7 +57,7 @@ type Msg =
   EditNewPlayerUrl String
   | AddPlayer
   | RemovePlayer Int
-  | SelectGame Game
+  | SelectTile Tile
   | BackToMain
   | PlayIntroGame Game1.Model Game1.Msg
   | PlayDontCheatGame Game2.Model Game2.Msg
@@ -70,7 +70,7 @@ update msg model =
                                                     , playerUrl = ""
                                                     , nextId = model.nextId + 1} ! []
     RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
-    SelectGame game                       -> {model | screen = GameScreen (game.initModel model.players)} ! []
+    SelectTile tile                       -> {model | screen = GameScreen (tile.initModel model.players)} ! []
     PlayIntroGame gameModel msg'  ->
       let
         (newGameModel, newGameCmd) = (Game1.update msg' gameModel)
@@ -102,9 +102,9 @@ viewMainScreen model =
         div [] (List.map (viewTile model) allGames)
     ]
 
-viewTile : Model -> Game -> Html Msg
-viewTile model game =
-    button [onClick (SelectGame game), disabled (game.isDisabled model.players)] [text game.title]
+viewTile : Model -> Tile -> Html Msg
+viewTile model tile =
+    button [onClick (SelectTile tile), disabled (tile.isDisabled model.players)] [text tile.title]
 
 viewGameScreen : GameModel -> Html Msg
 viewGameScreen gameModel =

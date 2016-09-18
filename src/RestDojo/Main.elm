@@ -21,21 +21,21 @@ main =
         subscriptions = \_ -> Sub.none}
 
 -- MODEL ---------------------------------------------------------------------------------------------------------------
-type GameModel =
-  IntroGameModel Game1.Model
-  | DontCheatGameModel Game2.Model
+type Game =
+  IntroGame Game1.Model
+  | DontCheatGame Game2.Model
 
-type alias Tile = TileDescriptor GameModel
+type alias Tile = TileDescriptor Game
 
 allGames : List Tile
 allGames = [
-  Game1.tileDescriptor IntroGameModel
-  , Game2.tileDescriptor DontCheatGameModel
+  Game1.tileDescriptor IntroGame
+  , Game2.tileDescriptor DontCheatGame
  ]
 
 type Screen  =
   MainScreen
-  | GameScreen GameModel
+  | GameScreen Game
 
 type alias Model = {
   nextId : Int,
@@ -74,13 +74,13 @@ update msg model =
     PlayIntroGame gameModel msg'  ->
       let
         (newGameModel, newGameCmd) = (Game1.update msg' gameModel)
-        newModel = {model | screen = GameScreen (IntroGameModel newGameModel)}
+        newModel = {model | screen = GameScreen (IntroGame newGameModel)}
       in
         (newModel, Cmd.map (PlayIntroGame newGameModel) newGameCmd)
     PlayDontCheatGame gameModel msg'  ->
       let
         (newGameModel, newGameCmd) = (Game2.update msg' gameModel)
-        newModel = {model | screen = GameScreen (DontCheatGameModel newGameModel)}
+        newModel = {model | screen = GameScreen (DontCheatGame newGameModel)}
       in
         (newModel, Cmd.map (PlayDontCheatGame newGameModel) newGameCmd)
     BackToMain                            -> {model | screen = MainScreen } ! []
@@ -90,7 +90,7 @@ view : Model -> Html Msg
 view model =
   case model.screen of
     MainScreen -> viewMainScreen model
-    GameScreen gameModel -> viewGameScreen gameModel
+    GameScreen game -> viewGameScreen game
 
 viewMainScreen : Model -> Html Msg
 viewMainScreen model =
@@ -106,17 +106,17 @@ viewTile : Model -> Tile -> Html Msg
 viewTile model tile =
     button [onClick (SelectTile tile), disabled (tile.isDisabled model.players)] [text tile.title]
 
-viewGameScreen : GameModel -> Html Msg
-viewGameScreen gameModel =
+viewGameScreen : Game -> Html Msg
+viewGameScreen game =
   div [] [
     button [onClick BackToMain] [text "Back"],
     span [] [text "fuck"], --TODO game.title],
     hr [] [],
-    viewGame gameModel
+    viewGame game
   ]
 
-viewGame : GameModel -> Html Msg
-viewGame gameModel =
-  case gameModel of
-    IntroGameModel model      -> Html.App.map (PlayIntroGame model) (Game1.view model)
-    DontCheatGameModel model  -> Html.App.map (PlayDontCheatGame model) (Game2.view model)
+viewGame : Game -> Html Msg
+viewGame game =
+  case game of
+    IntroGame model      -> Html.App.map (PlayIntroGame model) (Game1.view model)
+    DontCheatGame model  -> Html.App.map (PlayDontCheatGame model) (Game2.view model)

@@ -9,6 +9,7 @@ import Json.Decode as Json
 
 import RestDojo.Types exposing (..)
 import RestDojo.Games.GameIntroduceYourself as Game1
+import RestDojo.Games.Cluedo.GameDontCheat as Game2
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Program Never
@@ -22,12 +23,14 @@ main =
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type GameModel =
   IntroGameModel Game1.Model
+  | DontCheatGameModel Game2.Model --TODO
 
 type alias Game = GameDescriptor GameModel
 
 allGames : List Game
 allGames = [
   Game1.gameDescriptor IntroGameModel
+  , Game2.gameDescriptor DontCheatGameModel
  ]
 
 type Screen  =
@@ -56,7 +59,8 @@ type Msg =
   | RemovePlayer Int
   | SelectGame Game
   | BackToMain
-  | PlayIntroGame Game Game1.Model Game1.Msg
+  | PlayIntroGame Game Game1.Model Game1.Msg --TODO
+  | PlayDontCheatGame Game Game2.Model Game2.Msg --TODO
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -73,6 +77,12 @@ update msg model =
         newModel = {model | screen = GameScreen (game, IntroGameModel newGameModel)}
       in
         (newModel, Cmd.map (PlayIntroGame game newGameModel) newGameCmd)
+    PlayDontCheatGame game gameModel msg'  ->
+      let
+        (newGameModel, newGameCmd) = (Game2.update msg' gameModel)
+        newModel = {model | screen = GameScreen (game, DontCheatGameModel newGameModel)}
+      in
+        (newModel, Cmd.map (PlayDontCheatGame game newGameModel) newGameCmd)
     BackToMain                            -> {model | screen = MainScreen } ! []
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
@@ -109,3 +119,4 @@ viewGame : Game -> GameModel -> Html Msg
 viewGame game gameModel =
   case gameModel of
     IntroGameModel model -> Html.App.map (PlayIntroGame game model) (Game1.view model)
+    DontCheatGameModel model -> Html.App.map (PlayDontCheatGame game model) (Game2.view model)

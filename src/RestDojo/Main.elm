@@ -27,8 +27,8 @@ type Game =
 
 type alias Tile = TileDescriptor Game
 
-allGames : List Tile
-allGames = [
+allTiles : List Tile
+allTiles = [
   Game1.tileDescriptor IntroGame
   , Game2.tileDescriptor DontCheatGame
  ]
@@ -99,7 +99,7 @@ viewMainScreen model =
         input [placeholder "URL", value model.playerUrl, on "input" (Json.map EditNewPlayerUrl targetValue)] [],
         button [onClick AddPlayer] [text "Add"],
         hr [] [],
-        div [] (List.map (viewTile model) allGames)
+        div [] (List.map (viewTile model) allTiles)
     ]
 
 viewTile : Model -> Tile -> Html Msg

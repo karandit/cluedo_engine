@@ -6,8 +6,8 @@ type alias Player = {
   url : String
 }
 
-type alias GameDescriptor a = {
+type alias GameDescriptor mdl = {
   title : String,
   isDisabled : List Player -> Bool,
-  initModel : List Player -> a
+  initModel : List Player -> mdl
 }

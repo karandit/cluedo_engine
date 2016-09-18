@@ -45,12 +45,12 @@ type alias Model = {
 }
 
 initModel : (Model, Cmd Msg)
-initModel = ({
+initModel = {
   nextId = 3,
   playerUrl = "",
   players = [Player 0 "http://localhost:3001", Player 1 "http://localhost:3002", Player 2 "http://localhost:3003"],
   screen = MainScreen
- }, Cmd.none)
+ } ! []
 
 -- UPDATE --------------------------------------------------------------------------------------------------------------
 type Msg =

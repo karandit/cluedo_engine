@@ -26,10 +26,10 @@ main =
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
 gameDescriptor : (Model -> a) -> GameDescriptor a
-gameDescriptor wrapper = {
+gameDescriptor modelWrapper = {
   title = "Introduce yourself",
   isDisabled = List.isEmpty,
-  initModel = \players -> wrapper (initModel players)
+  initModel = \players -> modelWrapper (initModel players)
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------
@@ -62,14 +62,14 @@ update msg model =
       ! List.map getName model.playerStates
 
     FetchNameSucceed player newName ->
-      {model
-        | playerStates = List.map (\(p, s) -> if (p.id == player.id) then (p, Success newName) else (p, s)) model.playerStates}
-      ! []
+      (newName |> Success |> updatePlayer model player.id) ! []
 
     FetchNameFail player reason ->
-      {model
-        | playerStates = List.map (\(p, s) -> if (p.id == player.id) then (p, Failed (toString reason)) else (p, s)) model.playerStates}
-      ! []
+      (toString reason |> Failed |> updatePlayer model player.id) ! []
+
+updatePlayer : Model -> Int -> State -> Model
+updatePlayer model playerId newState =
+      {model | playerStates = List.map (\(p, s) -> (p, if (p.id == playerId) then newState else s)) model.playerStates}
 
 getName : (Player, State) -> Cmd Msg
 getName (player, _) =
@@ -88,4 +88,4 @@ view model =
 
 viewPlayerState : (Player, State) -> Html Msg
 viewPlayerState (player, state) =
-  div [] [text player.url, text "    :    ", text (toString state)]
+  div [] [text (player.url ++ "    :    " ++ (toString state))]

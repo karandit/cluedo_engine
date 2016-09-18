@@ -16,10 +16,10 @@ main =
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
 gameDescriptor : (Model -> a) -> GameDescriptor a
-gameDescriptor wrapper = {
+gameDescriptor modelWrapper = {
   title = "Don't cheat",
   isDisabled = \players -> List.isEmpty players,
-  initModel = \players -> wrapper (initModel players)
+  initModel = \players -> modelWrapper (initModel players)
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------

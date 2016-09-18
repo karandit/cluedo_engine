@@ -1,4 +1,4 @@
-module RestDojo.Games.Cluedo.GameDontCheat exposing (gameDescriptor, Model, Msg, update, view)
+module RestDojo.Games.Cluedo.GameDontCheat exposing (tileDescriptor, Model, Msg, update, view)
 
 import Html exposing (Html, text, div)
 import Html.App
@@ -15,11 +15,11 @@ main =
         subscriptions = \_ -> Sub.none}
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
-gameDescriptor : (Model -> a) -> GameDescriptor a
-gameDescriptor modelWrapper = {
+tileDescriptor : (Model -> a) -> TileDescriptor a
+tileDescriptor modelWrapper = {
   title = "Don't cheat",
   isDisabled = \players -> List.isEmpty players,
-  initModel = \players -> modelWrapper (initModel players)
+  initGame = \players -> modelWrapper (initModel players)
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------

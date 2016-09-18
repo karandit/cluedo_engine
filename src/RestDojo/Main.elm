@@ -25,12 +25,12 @@ type GameModel =
   IntroGameModel Game1.Model
   | DontCheatGameModel Game2.Model
 
-type alias Tile = GameDescriptor GameModel
+type alias Tile = TileDescriptor GameModel
 
 allGames : List Tile
 allGames = [
-  Game1.gameDescriptor IntroGameModel
-  , Game2.gameDescriptor DontCheatGameModel
+  Game1.tileDescriptor IntroGameModel
+  , Game2.tileDescriptor DontCheatGameModel
  ]
 
 type Screen  =
@@ -70,7 +70,7 @@ update msg model =
                                                     , playerUrl = ""
                                                     , nextId = model.nextId + 1} ! []
     RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
-    SelectTile tile                       -> {model | screen = GameScreen (tile.initModel model.players)} ! []
+    SelectTile tile                       -> {model | screen = GameScreen (tile.initGame model.players)} ! []
     PlayIntroGame gameModel msg'  ->
       let
         (newGameModel, newGameCmd) = (Game1.update msg' gameModel)

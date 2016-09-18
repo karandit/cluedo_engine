@@ -1,4 +1,4 @@
-module RestDojo.Games.GameIntroduceYourself exposing (gameDescriptor, Model, Msg, update, view)
+module RestDojo.Games.GameIntroduceYourself exposing (tileDescriptor, Model, Msg, update, view)
 
 import Html exposing (Html, text, div, span, button)
 import Html.Attributes exposing (disabled)
@@ -25,11 +25,11 @@ main =
         subscriptions = \_ -> Sub.none}
 
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
-gameDescriptor : (Model -> a) -> GameDescriptor a
-gameDescriptor modelWrapper = {
+tileDescriptor : (Model -> a) -> TileDescriptor a
+tileDescriptor modelWrapper = {
   title = "Introduce yourself",
   isDisabled = List.isEmpty,
-  initModel = \players -> modelWrapper (initModel players)
+  initGame = \players -> modelWrapper (initModel players)
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------

@@ -25,6 +25,10 @@ type Game =
   IntroGame Game1.Model
   | DontCheatGame Game2.Model
 
+type GameMsg =
+  IntroGameMsg Game1.Msg
+  | DontCheatGameMsg Game2.Msg
+
 type alias Tile = TileDescriptor Game
 
 allTiles : List Tile
@@ -59,8 +63,7 @@ type Msg =
   | RemovePlayer Int
   | SelectTile Tile
   | BackToMain
-  | PlayIntroGame Game1.Model Game1.Msg
-  | PlayDontCheatGame Game2.Model Game2.Msg
+  | PlayGame Game GameMsg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -70,20 +73,16 @@ update msg model =
                                                     , playerUrl = ""
                                                     , nextId = model.nextId + 1} ! []
     RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
-    SelectTile tile                       -> {model | screen = GameScreen (tile.initGame model.players)} ! []
-    PlayIntroGame gameModel msg'  ->
-      let
-        (newGameModel, newGameCmd) = (Game1.update msg' gameModel)
-        newModel = {model | screen = GameScreen (IntroGame newGameModel)}
-      in
-        (newModel, Cmd.map (PlayIntroGame newGameModel) newGameCmd)
-    PlayDontCheatGame gameModel msg'  ->
-      let
-        (newGameModel, newGameCmd) = (Game2.update msg' gameModel)
-        newModel = {model | screen = GameScreen (DontCheatGame newGameModel)}
-      in
-        (newModel, Cmd.map (PlayDontCheatGame newGameModel) newGameCmd)
     BackToMain                            -> {model | screen = MainScreen } ! []
+    SelectTile tile                       -> {model | screen = GameScreen (tile.initGame model.players)} ! []
+    PlayGame game gameMsg                 -> {model | screen = GameScreen (updateGame game gameMsg)} ! []
+
+updateGame : Game -> GameMsg -> Game
+updateGame game gameMsg=
+  case (game, gameMsg) of
+      (IntroGame gameModel, IntroGameMsg msg)         -> let (newGameModel, _) = Game1.update msg gameModel in IntroGame newGameModel
+      (DontCheatGame gameModel, DontCheatGameMsg msg) -> let (newGameModel, _) = Game2.update msg gameModel in DontCheatGame newGameModel
+      (_, _) -> Debug.crash "TODO"
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg
@@ -112,11 +111,11 @@ viewGameScreen game =
     button [onClick BackToMain] [text "Back"],
     span [] [text "fuck"], --TODO game.title],
     hr [] [],
-    viewGame game
+    Html.App.map (PlayGame game) (viewGame game)
   ]
 
-viewGame : Game -> Html Msg
+viewGame : Game -> Html GameMsg
 viewGame game =
   case game of
-    IntroGame model      -> Html.App.map (PlayIntroGame model) (Game1.view model)
-    DontCheatGame model  -> Html.App.map (PlayDontCheatGame model) (Game2.view model)
+    IntroGame model      -> Game1.view model |> Html.App.map IntroGameMsg
+    DontCheatGame model  -> Game2.view model |> Html.App.map DontCheatGameMsg

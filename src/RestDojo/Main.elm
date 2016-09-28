@@ -75,13 +75,29 @@ update msg model =
     RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
     BackToMain                            -> {model | screen = MainScreen } ! []
     SelectTile tile                       -> {model | screen = GameScreen (tile.initGame model.players)} ! []
-    PlayGame game gameMsg                 -> {model | screen = GameScreen (updateGame game gameMsg)} ! []
+    PlayGame game gameMsg                 ->
+            let
+              (newGame, newCmd) = updateGame gameMsg game
+            in
+              {model | screen = GameScreen newGame} ! [newCmd]
 
-updateGame : Game -> GameMsg -> Game
-updateGame game gameMsg=
-  case (game, gameMsg) of
-      (IntroGame gameModel, IntroGameMsg msg)         -> let (newGameModel, _) = Game1.update msg gameModel in IntroGame newGameModel
-      (DontCheatGame gameModel, DontCheatGameMsg msg) -> let (newGameModel, _) = Game2.update msg gameModel in DontCheatGame newGameModel
+updateGame : GameMsg -> Game -> (Game, Cmd Msg)
+updateGame msg game =
+  case (msg, game) of
+      (IntroGameMsg gameMsg, IntroGame gameModel)         ->
+                            let
+                              (newGameModel, newGameCmd) = Game1.update gameMsg gameModel
+                              _ = Debug.log "intro newGameCmd" newGameCmd
+                              newGame = IntroGame newGameModel
+                              newCmd = Cmd.map (\newGameMsg -> PlayGame newGame (IntroGameMsg newGameMsg)) newGameCmd
+                            in
+                              (newGame, newCmd)
+      (DontCheatGameMsg gameMsg, DontCheatGame gameModel) ->
+                            let
+                              (newGameModel, newGameCmd) = Game2.update gameMsg gameModel
+                              newGame = DontCheatGame newGameModel
+                            in
+                              (newGame, Cmd.none) --map (PlayGame newGame DontCheatGameMsg) newGameCmd)
       (_, _) -> Debug.crash "TODO"
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------

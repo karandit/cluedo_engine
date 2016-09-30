@@ -54,7 +54,7 @@ type Msg =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case Debug.log "IntroduceYourself" msg of
+  case msg of
     PushStart ->
       {model
         | started = True

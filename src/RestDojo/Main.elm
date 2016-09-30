@@ -63,11 +63,11 @@ type Msg =
   | RemovePlayer Int
   | SelectTile Tile
   | BackToMain
-  | PlayGame Game GameMsg
+  | PlayGame GameMsg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case Debug.log "Main" msg of
+  case msg of
     EditNewPlayerUrl url                  -> {model | playerUrl = url} ! []
     AddPlayer                             -> {model | players =  (Player model.nextId model.playerUrl) :: model.players
                                                     , playerUrl = ""
@@ -75,11 +75,14 @@ update msg model =
     RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
     BackToMain                            -> {model | screen = MainScreen } ! []
     SelectTile tile                       -> {model | screen = GameScreen (tile.initGame model.players)} ! []
-    PlayGame game gameMsg                 ->
-            let
-              (newGame, newCmd) = updateGame gameMsg game
-            in
-              {model | screen = GameScreen newGame} ! [newCmd]
+    PlayGame gameMsg                      ->
+            case model.screen of
+              MainScreen -> model ! [] -- TODO it couldn't happen, cause MainScreen can't get PlayGame msg
+              GameScreen game ->
+                    let
+                      (newGame, newCmd) = updateGame gameMsg game
+                    in
+                      {model | screen = GameScreen newGame} ! [newCmd]
 
 updateGame : GameMsg -> Game -> (Game, Cmd Msg)
 updateGame msg game =
@@ -87,9 +90,8 @@ updateGame msg game =
       (IntroGameMsg gameMsg, IntroGame gameModel)         ->
                             let
                               (newGameModel, newGameCmd) = Game1.update gameMsg gameModel
-                              _ = Debug.log "intro newGameCmd" newGameCmd
                               newGame = IntroGame newGameModel
-                              newCmd = Cmd.map (\newGameMsg -> PlayGame newGame (IntroGameMsg newGameMsg)) newGameCmd
+                              newCmd = Cmd.map (\newGameMsg -> PlayGame (IntroGameMsg newGameMsg)) newGameCmd
                             in
                               (newGame, newCmd)
       (DontCheatGameMsg gameMsg, DontCheatGame gameModel) ->
@@ -97,7 +99,7 @@ updateGame msg game =
                               (newGameModel, newGameCmd) = Game2.update gameMsg gameModel
                               newGame = DontCheatGame newGameModel
                             in
-                              (newGame, Cmd.none) --map (PlayGame newGame DontCheatGameMsg) newGameCmd)
+                              (newGame, Cmd.none) --map (PlayGame DontCheatGameMsg) newGameCmd)
       (_, _) -> Debug.crash "TODO"
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------
@@ -127,7 +129,7 @@ viewGameScreen game =
     button [onClick BackToMain] [text "Back"],
     span [] [text "fuck"], --TODO game.title],
     hr [] [],
-    Html.App.map (PlayGame game) (viewGame game)
+    Html.App.map PlayGame (viewGame game)
   ]
 
 viewGame : Game -> Html GameMsg

@@ -39,7 +39,7 @@ allTiles = [
 
 type Screen  =
   MainScreen
-  | GameScreen Game
+  | GameScreen String Game
 
 type alias Model = {
   nextId : Int,
@@ -74,15 +74,15 @@ update msg model =
                                                     , nextId = model.nextId + 1} ! []
     RemovePlayer id                       -> {model | players = List.filter (\p -> p.id /= id) model.players} ! []
     BackToMain                            -> {model | screen = MainScreen } ! []
-    SelectTile tile                       -> {model | screen = GameScreen (tile.initGame model.players)} ! []
+    SelectTile tile                       -> {model | screen = GameScreen tile.title (tile.initGame model.players)} ! []
     PlayGame gameMsg                      ->
             case model.screen of
               MainScreen -> model ! [] -- TODO it couldn't happen, cause MainScreen can't get PlayGame msg
-              GameScreen game ->
+              GameScreen title game ->
                     let
                       (newGame, newCmd) = updateGame gameMsg game
                     in
-                      {model | screen = GameScreen newGame} ! [newCmd]
+                      {model | screen = GameScreen title newGame} ! [newCmd]
 
 updateGame : GameMsg -> Game -> (Game, Cmd Msg)
 updateGame msg game =
@@ -107,7 +107,7 @@ view : Model -> Html Msg
 view model =
   case model.screen of
     MainScreen -> viewMainScreen model
-    GameScreen game -> viewGameScreen game
+    GameScreen title game -> viewGameScreen title game
 
 viewMainScreen : Model -> Html Msg
 viewMainScreen model =
@@ -123,11 +123,11 @@ viewTile : Model -> Tile -> Html Msg
 viewTile model tile =
     button [onClick (SelectTile tile), disabled (tile.isDisabled model.players)] [text tile.title]
 
-viewGameScreen : Game -> Html Msg
-viewGameScreen game =
+viewGameScreen : String -> Game -> Html Msg
+viewGameScreen title game =
   div [] [
     button [onClick BackToMain] [text "Back"],
-    span [] [text "fuck"], --TODO game.title],
+    span [] [text title],
     hr [] [],
     Html.App.map PlayGame (viewGame game)
   ]

@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Html.App
 import Http
 import Task
+import Random
 
 import RestDojo.Types exposing (..)
 import RestDojo.Games.Cluedo.API  as API exposing (..)
@@ -29,29 +30,35 @@ tileDescriptor modelWrapper = {
 
 --MODEL-----------------------------------------------------------------------------------------------------------------
 type alias Model = {
-  started: Bool
-  , bots: List Bot
+  started : Bool
+  , gameId : Maybe GameId
+  , bots : List Bot
   }
 
 initModel : List Player -> Model
 initModel players = {
   started = False
+  , gameId = Nothing
   , bots = List.map initBot players
  }
 
 initBot : Player -> Bot
-initBot player =
-   Bot player.id player.url "" None [Revolver, Rope] [RevGreen, MrsWhite] [Kitchen, BallRoom, Hall]
+initBot player = {
+    id =  player.id
+    , url = player.url
+    , description = ""
+    , state = None
+    , weapons = [Revolver, Rope]
+    , suspects = [RevGreen, MrsWhite]
+    , locations = [Kitchen, BallRoom, Hall]
+  }
 
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =
   StartGame
+  | GameIdGenerated GameId
   | StartGameSucceed BotId String
   | StartGameFail BotId Http.Error
-
-currentGameId : GameId
-currentGameId =
-  78245789
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -60,7 +67,10 @@ update msg model =
       {model
         | started = True
         , bots = List.map (\bot -> {bot | state = WaitingToJoin}) model.bots}
-      ! List.map startGame model.bots
+      ! [Random.generate GameIdGenerated (Random.int 1 6000)]
+
+    GameIdGenerated genGameId ->
+      {model | gameId = Just genGameId } ! List.map (startBot genGameId) model.bots
 
     StartGameSucceed botId result ->
       let
@@ -78,16 +88,16 @@ updateBot : Model -> Int -> (Bot -> Bot) -> Model
 updateBot model botId updater =
       {model | bots = List.map (\bot -> if (bot.id == botId) then (updater bot) else bot) model.bots}
 
-startGame : Bot -> Cmd Msg
-startGame bot =
-      Task.perform (StartGameFail bot.id) (StartGameSucceed bot.id) (API.startGame currentGameId bot)
+startBot : GameId -> Bot -> Cmd Msg
+startBot gameId bot =
+      Task.perform (StartGameFail bot.id) (StartGameSucceed bot.id) (API.startGame gameId bot)
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg
 view model =
   div [] [
-    button [onClick StartGame, disabled model.started] [text "Start"],
-    div [] (List.map viewBot model.bots)
+    button [onClick StartGame, disabled model.started] [text "Start"]
+    , div [] (List.map viewBot model.bots)
   ]
 
 viewBot : Bot -> Html Msg

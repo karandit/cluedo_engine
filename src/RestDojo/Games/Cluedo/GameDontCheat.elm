@@ -29,10 +29,16 @@ tileDescriptor modelWrapper = {
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------
+type alias Secret = {
+  weapon: Weapon
+  , location: Location
+  , suspect: Suspect
+  }
+
 type alias Model = {
   started : Bool
   , gameId : Maybe GameId
-  , secret : Maybe {weapon: Weapon, location: Location, suspect: Suspect}
+  , secret : Maybe Secret
   , bots : List Bot
   }
 
@@ -74,7 +80,7 @@ update msg model =
     GameIdGenerated randomness ->
       {model
         | gameId = Just randomness.gameId
-        , secret = Just {weapon = randomness.weapon, location = randomness.location, suspect = randomness.suspect}} 
+        , secret = Just {weapon = randomness.weapon, location = randomness.location, suspect = randomness.suspect}}
       ! List.map (startBot randomness.gameId) model.bots
 
     StartGameSucceed botId result ->
@@ -102,8 +108,16 @@ view : Model -> Html Msg
 view model =
   div [] [
     button [onClick StartGame, disabled model.started] [text "Start"]
+    , viewSecret model.secret
     , div [] (List.map viewBot model.bots)
   ]
+
+viewSecret : Maybe Secret -> Html Msg
+viewSecret maybeSecret =
+  case maybeSecret of
+    Nothing -> div [] [text "? ? ?"]
+    Just secret ->
+        div [] [text ((toString secret.suspect) ++ " " ++ (toString secret.location) ++ " " ++ (toString secret.weapon))]
 
 viewBot : Bot -> Html Msg
 viewBot bot =

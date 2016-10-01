@@ -52,35 +52,28 @@ type alias Bot = {
     , locations : List Location
   }
 
-
 -- API end-points ------------------------------------------------------------------------------------------------------
 name : String -> Task Error String
 name botUrl =
   Http.getString <| botUrl ++ "/name"
 
-startGame : GameId -> String -> Task Error String
-startGame gameId botUrl =
+startGame : GameId -> Bot -> Task Error String
+startGame gameId bot =
   let
-    url = botUrl ++ "/" ++ (toString gameId) ++ "/startGame"
+    url = bot.url ++ "/" ++ (toString gameId) ++ "/startGame"
   in
-    Http.post botDecoder url startGamepayload
+    Http.post botDecoder url (startGamePayload bot)
 
-startGamepayload : Body
-startGamepayload = --{location: Location, suspect: Suspect, weapon: Weapon} =
+startGamePayload : Bot -> Body
+startGamePayload bot =
   let
-    weapons = [Revolver, Rope]
-    suspects = [RevGreen, MrsWhite]
-    locations = [Kitchen, BallRoom, Hall]
-    playerId = 1
-    countOfPlayers = 3
-
     payload = JsonEnc.encode 2 <| JsonEnc.object
       [
-      ("playerId", JsonEnc.int playerId)
-      , ("countOfPlayers", JsonEnc.int countOfPlayers)
-      , ("weapons", JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) weapons) )
-      , ("locations",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) locations) )
-      , ("suspects",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) suspects) )
+      ("playerId", JsonEnc.int bot.id)
+      , ("countOfPlayers", JsonEnc.int 12)
+      , ("weapons", JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) bot.weapons) )
+      , ("locations",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) bot.locations) )
+      , ("suspects",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) bot.suspects) )
       ]
   in
     Http.string payload

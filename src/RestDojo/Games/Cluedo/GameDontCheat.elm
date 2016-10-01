@@ -80,7 +80,7 @@ updateBot model botId updater =
 
 startGame : Bot -> Cmd Msg
 startGame bot =
-      Task.perform (StartGameFail bot.id) (StartGameSucceed bot.id) (API.startGame currentGameId bot.url)
+      Task.perform (StartGameFail bot.id) (StartGameSucceed bot.id) (API.startGame currentGameId bot)
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg

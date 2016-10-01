@@ -1,7 +1,7 @@
 module RestDojo.Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (placeholder, value, disabled)
+import Html.Attributes exposing (placeholder, value, disabled, src, width, height)
 import Html.Events exposing (onClick, on, targetValue)
 import Html.App
 
@@ -112,11 +112,19 @@ view model =
 viewMainScreen : Model -> Html Msg
 viewMainScreen model =
     div [] [
-        div [] (List.map (\player -> div [] [text player.url, button [onClick (RemovePlayer player.id)] [text "Remove"]]) model.players),
+        div [] (List.map viewPlayer model.players),
         input [placeholder "URL", value model.playerUrl, on "input" (Json.map EditNewPlayerUrl targetValue)] [],
         button [onClick AddPlayer] [text "Add"],
         hr [] [],
         div [] (List.map (viewTile model) allTiles)
+    ]
+
+viewPlayer : Player -> Html Msg
+viewPlayer player =
+  div [] [
+    img [src <| "https://robohash.org/" ++ player.url, width 80, height 80] []
+    , text player.url
+    , button [onClick (RemovePlayer player.id)] [text "Remove"]
     ]
 
 viewTile : Model -> Tile -> Html Msg

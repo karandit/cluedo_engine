@@ -1,7 +1,7 @@
 module RestDojo.Games.Cluedo.GameDontCheat exposing (tileDescriptor, Model, Msg, update, view)
 
-import Html exposing (Html, text, div, button)
-import Html.Attributes exposing (disabled)
+import Html exposing (Html, text, div, button, img)
+import Html.Attributes exposing (disabled, src, width, height)
 import Html.Events exposing (onClick)
 import Html.App
 import Http
@@ -103,4 +103,7 @@ view model =
 
 viewBot : Bot -> Html Msg
 viewBot bot =
-  div [] [text (bot.url ++ ", " ++ bot.description ++ "    :    " ++ (toString bot.state))]
+  div [] [
+    img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
+    , text (bot.url ++ ", " ++ bot.description ++ "    :    " ++ (toString bot.state))
+    ]

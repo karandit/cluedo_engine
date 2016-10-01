@@ -1,4 +1,4 @@
-module RestDojo.Games.Cluedo.API exposing (Location(..), Suspect(..), Weapon(..), Bot, BotId, State(..), Randomness,
+module RestDojo.Games.Cluedo.API exposing (Location(..), Suspect(..), Weapon(..), Secret, Bot, BotId, State(..), Randomness,
   startGame, gameGenerator)
 
 import Maybe exposing (withDefault)
@@ -39,6 +39,12 @@ type Weapon =
   | Revolver
   | Rope
   | Spanner
+
+type alias Secret = {
+  weapon: Weapon
+  , location: Location
+  , suspect: Suspect
+  }
 
 type Card =
   WeaponCard Weapon
@@ -96,9 +102,7 @@ botDecoder =
 -- Random Generator ----------------------------------------------------------------------------------------------------
 type alias Randomness = {
     gameId: GameId
-    , weapon: Weapon
-    , location: Location
-    , suspect: Suspect
+    , secret: Secret
   }
 
 gameGenerator: Generator Randomness
@@ -121,7 +125,9 @@ mapToRandomness: GameId
   -> Randomness
 mapToRandomness gameId (maybeWeapon, _) (maybeSuspect, _) (maybeLocation, _) =
    { gameId = gameId
-   , weapon = withDefault Rope maybeWeapon
-   , location = withDefault Hall maybeLocation
-   , suspect = withDefault MrsWhite maybeSuspect
+   , secret = {
+      weapon = withDefault Rope maybeWeapon
+      , location = withDefault Hall maybeLocation
+      , suspect = withDefault MrsWhite maybeSuspect
+    }
  }

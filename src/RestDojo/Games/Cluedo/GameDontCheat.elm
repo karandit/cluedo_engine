@@ -29,12 +29,6 @@ tileDescriptor modelWrapper = {
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------
-type alias Secret = {
-  weapon: Weapon
-  , location: Location
-  , suspect: Suspect
-  }
-
 type alias Model = {
   started : Bool
   , gameId : Maybe GameId
@@ -80,7 +74,7 @@ update msg model =
     Shuffled randomness ->
       {model
         | gameId = Just randomness.gameId
-        , secret = Just {weapon = randomness.weapon, location = randomness.location, suspect = randomness.suspect}}
+        , secret = Just randomness.secret}
       ! List.map (startBot randomness.gameId) model.bots
 
     BotStartGameSucceed botId result ->

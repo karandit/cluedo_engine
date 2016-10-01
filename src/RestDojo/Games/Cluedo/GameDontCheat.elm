@@ -64,9 +64,9 @@ initBot player = {
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =
   StartGame
-  | GameIdGenerated Randomness
-  | StartGameSucceed BotId String
-  | StartGameFail BotId Http.Error
+  | Shuffled Randomness
+  | BotStartGameSucceed BotId String
+  | BotStartGameFail BotId Http.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -75,21 +75,21 @@ update msg model =
       {model
         | started = True
         , bots = List.map (\bot -> {bot | state = WaitingToJoin}) model.bots}
-      ! [Random.generate GameIdGenerated gameGenerator]
+      ! [Random.generate Shuffled gameGenerator]
 
-    GameIdGenerated randomness ->
+    Shuffled randomness ->
       {model
         | gameId = Just randomness.gameId
         , secret = Just {weapon = randomness.weapon, location = randomness.location, suspect = randomness.suspect}}
       ! List.map (startBot randomness.gameId) model.bots
 
-    StartGameSucceed botId result ->
+    BotStartGameSucceed botId result ->
       let
         updater bot = {bot | state = Joined, description = result}
       in
         (updateBot model botId updater) ! []
 
-    StartGameFail botId reason ->
+    BotStartGameFail botId reason ->
       let
         updater bot = {bot | state = JoinFailed (toString reason)}
       in
@@ -101,7 +101,7 @@ updateBot model botId updater =
 
 startBot : GameId -> Bot -> Cmd Msg
 startBot gameId bot =
-      Task.perform (StartGameFail bot.id) (StartGameSucceed bot.id) (API.startGame gameId bot)
+      Task.perform (BotStartGameFail bot.id) (BotStartGameSucceed bot.id) (API.startGame gameId bot)
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg
@@ -124,6 +124,7 @@ viewSecret maybeSecret =
             , text (toString secret.weapon)
             ]
         ]
+
 viewBot : Bot -> Html Msg
 viewBot bot =
   div [] [

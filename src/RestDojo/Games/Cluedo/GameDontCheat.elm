@@ -6,10 +6,10 @@ import Html.Events exposing (onClick)
 import Html.App
 import Http
 import Task
-import Random
+import Random exposing (Generator)
 
 import RestDojo.Types exposing (..)
-import RestDojo.Games.Cluedo.API  as API exposing (..)
+import RestDojo.Games.Cluedo.API as API exposing (..)
 
 -- MAIN ----------------------------------------------------------------------------------------------------------------
 main : Program Never
@@ -56,7 +56,7 @@ initBot player = {
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =
   StartGame
-  | GameIdGenerated GameId
+  | GameIdGenerated Randomness
   | StartGameSucceed BotId String
   | StartGameFail BotId Http.Error
 
@@ -67,10 +67,10 @@ update msg model =
       {model
         | started = True
         , bots = List.map (\bot -> {bot | state = WaitingToJoin}) model.bots}
-      ! [Random.generate GameIdGenerated (Random.int 1 6000)]
+      ! [Random.generate GameIdGenerated gameGenerator]
 
-    GameIdGenerated genGameId ->
-      {model | gameId = Just genGameId } ! List.map (startBot genGameId) model.bots
+    GameIdGenerated randomness ->
+      {model | gameId = Just randomness.gameId} ! List.map (startBot randomness.gameId) model.bots
 
     StartGameSucceed botId result ->
       let

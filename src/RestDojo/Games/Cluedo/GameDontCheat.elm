@@ -1,6 +1,6 @@
 module RestDojo.Games.Cluedo.GameDontCheat exposing (tileDescriptor, Model, Msg, update, view)
 
-import Html exposing (Html, text, div, button, img)
+import Html exposing (Html, text, div, span, button, img)
 import Html.Attributes exposing (disabled, src, width, height)
 import Html.Events exposing (onClick)
 import Html.App
@@ -117,8 +117,13 @@ viewSecret maybeSecret =
   case maybeSecret of
     Nothing -> div [] [text "? ? ?"]
     Just secret ->
-        div [] [text ((toString secret.suspect) ++ " " ++ (toString secret.location) ++ " " ++ (toString secret.weapon))]
-
+        div [] [
+          span [] [
+            img [src <| "img/" ++ (toString secret.suspect) ++ ".png", width 80, height 125] []
+            , text (toString secret.location)
+            , text (toString secret.weapon)
+            ]
+        ]
 viewBot : Bot -> Html Msg
 viewBot bot =
   div [] [

@@ -28,31 +28,20 @@ tileDescriptor modelWrapper = {
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------
-type State = None
-      | WaitingToJoin
-      | Joined
-      | JoinFailed String
-
-type alias BotId = Int
-
-type alias Bot = {
-    id : BotId
-    , url : String
-    , description : String
-    , state : State
-  }
-
-
 type alias Model = {
   started: Bool
   , bots: List Bot
- }
+  }
 
 initModel : List Player -> Model
 initModel players = {
   started = False
-  , bots = List.map (\p -> Bot p.id p.url "" None) players
+  , bots = List.map initBot players
  }
+
+initBot : Player -> Bot
+initBot player =
+   Bot player.id player.url "" None [Revolver, Rope] [RevGreen, MrsWhite] [Kitchen, BallRoom, Hall]
 
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =

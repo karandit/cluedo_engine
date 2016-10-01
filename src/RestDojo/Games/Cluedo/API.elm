@@ -1,8 +1,9 @@
-module RestDojo.Games.Cluedo.API exposing (startGame)
+module RestDojo.Games.Cluedo.API exposing (Location(..), Suspect(..), Weapon(..), Bot, BotId, State(..), startGame)
 
-import Http exposing (Error, getString, post, empty)
+import Http exposing (Error, Body, getString, post, empty)
 import Task exposing (Task)
 import Json.Decode as Json exposing (..)
+import Json.Encode as JsonEnc exposing (..)
 
 import RestDojo.Types exposing (..)
 
@@ -34,19 +35,55 @@ type Weapon =
   | Rope
   | Spanner
 
+type State = None
+      | WaitingToJoin
+      | Joined
+      | JoinFailed String
+
+type alias BotId = Int
+
+type alias Bot = {
+    id : BotId
+    , url : String
+    , description : String
+    , state : State
+    , weapons : List Weapon
+    , suspects : List Suspect
+    , locations : List Location
+  }
+
 
 -- API end-points ------------------------------------------------------------------------------------------------------
-name: String -> Task Error String
+name : String -> Task Error String
 name botUrl =
   Http.getString <| botUrl ++ "/name"
 
-startGame: GameId -> String -> Task Error String
+startGame : GameId -> String -> Task Error String
 startGame gameId botUrl =
   let
     url = botUrl ++ "/" ++ (toString gameId) ++ "/startGame"
   in
-    Http.post botDecoder url Http.empty
+    Http.post botDecoder url startGamepayload
 
+startGamepayload : Body
+startGamepayload = --{location: Location, suspect: Suspect, weapon: Weapon} =
+  let
+    weapons = [Revolver, Rope]
+    suspects = [RevGreen, MrsWhite]
+    locations = [Kitchen, BallRoom, Hall]
+    playerId = 1
+    countOfPlayers = 3
+
+    payload = JsonEnc.encode 2 <| JsonEnc.object
+      [
+      ("playerId", JsonEnc.int playerId)
+      , ("countOfPlayers", JsonEnc.int countOfPlayers)
+      , ("weapons", JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) weapons) )
+      , ("locations",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) locations) )
+      , ("suspects",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) suspects) )
+      ]
+  in
+    Http.string payload
 
 -- Json decoders -------------------------------------------------------------------------------------------------------
 botDecoder : Decoder String

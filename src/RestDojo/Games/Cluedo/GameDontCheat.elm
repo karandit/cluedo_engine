@@ -32,6 +32,7 @@ tileDescriptor modelWrapper = {
 type alias Model = {
   started : Bool
   , gameId : Maybe GameId
+  , secret : Maybe {weapon: Weapon, location: Location, suspect: Suspect}
   , bots : List Bot
   }
 
@@ -39,6 +40,7 @@ initModel : List Player -> Model
 initModel players = {
   started = False
   , gameId = Nothing
+  , secret = Nothing
   , bots = List.map initBot players
  }
 
@@ -70,7 +72,10 @@ update msg model =
       ! [Random.generate GameIdGenerated gameGenerator]
 
     GameIdGenerated randomness ->
-      {model | gameId = Just randomness.gameId} ! List.map (startBot randomness.gameId) model.bots
+      {model
+        | gameId = Just randomness.gameId
+        , secret = Just {weapon = randomness.weapon, location = randomness.location, suspect = randomness.suspect}} 
+      ! List.map (startBot randomness.gameId) model.bots
 
     StartGameSucceed botId result ->
       let

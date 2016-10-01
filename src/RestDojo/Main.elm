@@ -98,8 +98,9 @@ updateGame msg game =
                             let
                               (newGameModel, newGameCmd) = Game2.update gameMsg gameModel
                               newGame = DontCheatGame newGameModel
+                              newCmd = Cmd.map (\newGameMsg -> PlayGame (DontCheatGameMsg newGameMsg)) newGameCmd
                             in
-                              (newGame, Cmd.none) --map (PlayGame DontCheatGameMsg) newGameCmd)
+                              (newGame, newCmd)
       (_, _) -> Debug.crash "TODO"
 
 -- VIEW ----------------------------------------------------------------------------------------------------------------

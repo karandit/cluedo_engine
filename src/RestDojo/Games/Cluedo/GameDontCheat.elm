@@ -14,7 +14,7 @@ import RestDojo.Games.Cluedo.API  as API exposing (..)
 main : Program Never
 main =
       Html.App.program {
-        init = initModel [Player 0 "http://localhost:3001", Player 1 "http://localhost:3003"] ! [],
+        init = initModel [Player 0 "http://localhost:3001"] ! [],
         update = update,
         view = view,
         subscriptions = \_ -> Sub.none}
@@ -30,25 +30,35 @@ tileDescriptor modelWrapper = {
 --MODEL-----------------------------------------------------------------------------------------------------------------
 type State = None
       | WaitingToJoin
-      | Joined Player String
-      | JoinFailed Player Http.Error
+      | Joined
+      | JoinFailed String
+
+type alias BotId = Int
+
+type alias Bot = {
+    id : BotId
+    , url : String
+    , description : String
+    , state : State
+  }
+
 
 type alias Model = {
   started: Bool
-  , playerStates: List (Player, State)
+  , bots: List Bot
  }
 
 initModel : List Player -> Model
 initModel players = {
   started = False
-  , playerStates = List.map (\p -> (p, None)) players
+  , bots = List.map (\p -> Bot p.id p.url "" None) players
  }
 
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =
   StartGame
-  | StartGameSucceed Player String
-  | StartGameFail Player Http.Error
+  | StartGameSucceed BotId String
+  | StartGameFail BotId Http.Error
 
 currentGameId : GameId
 currentGameId =
@@ -56,31 +66,41 @@ currentGameId =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  case Debug.log "Dont cheat" msg of
     StartGame ->
       {model
         | started = True
-        , playerStates = List.map (\(p, _) -> (p, WaitingToJoin)) model.playerStates}
-      ! List.map startGame model.playerStates
+        , bots = List.map (\bot -> {bot | state = WaitingToJoin}) model.bots}
+      ! List.map startGame model.bots
 
-    _  ->
-      model ! []
+    StartGameSucceed botId result ->
+      let
+        updater bot = {bot | state = Joined, description = result}
+      in
+        (updateBot model botId updater) ! []
 
-startGame : (Player, State) -> Cmd Msg
-startGame (player, _) =
-    let
-      url = API.startGame currentGameId player
-    in
-      Task.perform (StartGameFail player) (StartGameSucceed player) (Http.getString url)
+    StartGameFail botId reason ->
+      let
+        updater bot = {bot | state = JoinFailed (toString reason)}
+      in
+        (updateBot model botId updater) ! []
+
+updateBot : Model -> Int -> (Bot -> Bot) -> Model
+updateBot model botId updater =
+      {model | bots = List.map (\bot -> if (bot.id == botId) then (updater bot) else bot) model.bots}
+
+startGame : Bot -> Cmd Msg
+startGame bot =
+      Task.perform (StartGameFail bot.id) (StartGameSucceed bot.id) (API.startGame currentGameId bot.url)
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg
 view model =
   div [] [
     button [onClick StartGame, disabled model.started] [text "Start"],
-    div [] (List.map viewPlayer model.playerStates)
+    div [] (List.map viewBot model.bots)
   ]
 
-viewPlayer : (Player, State) -> Html Msg
-viewPlayer (player, state) =
-  div [] [text (player.url ++ "    :    " ++ (toString state))]
+viewBot : Bot -> Html Msg
+viewBot bot =
+  div [] [text (bot.url ++ ", " ++ bot.description ++ "    :    " ++ (toString bot.state))]

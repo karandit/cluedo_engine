@@ -8,6 +8,7 @@ import Http
 import Task
 import Random exposing (Generator)
 
+import RestDojo.Util exposing (zipAsLongest)
 import RestDojo.Types exposing (..)
 import RestDojo.Games.Cluedo.API as API exposing (..)
 
@@ -74,7 +75,7 @@ update msg model =
     Shuffled (randomness, cards) ->
       let
         botIds = List.map (\bot -> bot.id) model.bots
-        botIdsAndCards = zipToLongest botIds cards
+        botIdsAndCards = zipAsLongest botIds cards
 
         addCardToBot bot card =
           case card of
@@ -98,19 +99,6 @@ update msg model =
     BotJoinFail botId reason ->
         (updateBot model botId (\bot -> {bot | state = JoinFailed (toString reason)})) ! []
 
-zipToLongest : List Int -> List Card -> List (Int, Card)
-zipToLongest botIds cards =
-    zipToLongestH [] botIds botIds cards
-
-zipToLongestH : List (a, b) -> List a -> List a -> List b -> List (a, b)
-zipToLongestH acc origShorter shorter longer =
-  case longer of
-    l::ls ->
-        case shorter of
-          s::ss -> zipToLongestH ((s, l) :: acc) origShorter ss ls
-          []  -> zipToLongestH acc origShorter origShorter longer
-    [] -> acc
-
 updateBot : Model -> Int -> (Bot -> Bot) -> Model
 updateBot model botId updater =
       {model | bots = List.map (\bot -> if (bot.id == botId) then (updater bot) else bot) model.bots}
@@ -125,7 +113,7 @@ view model =
   div [] [
     button [onClick StartGame, disabled model.started] [text "Start"]
     , div [] [viewSecret model.secret]
-    , div [] <| List.map viewBotCard model.bots
+    , div [] <| List.map viewBot model.bots
   ]
 
 viewSecret : Maybe Secret -> Html Msg
@@ -134,7 +122,7 @@ viewSecret maybeSecret =
     Nothing ->
       viewSecretCards "None" "None" "None"
     Just secret ->
-        viewSecretCards (toString secret.suspect) (toString secret.location) (toString secret.weapon)
+      viewSecretCards (toString secret.suspect) (toString secret.location) (toString secret.weapon)
 
 viewSecretCards : String -> String -> String -> Html Msg
 viewSecretCards suspectName weaponName locationName =
@@ -148,19 +136,8 @@ viewCard : String -> Html Msg
 viewCard name =
   img [src <| "img/" ++ name ++ ".png", width 144, height 180, title name] []
 
-viewBots : List Bot -> Html Msg
-viewBots bots =
-    div [] <| List.map viewBot bots
-
 viewBot : Bot -> Html Msg
 viewBot bot =
-  div [] [
-    viewBotCard bot
-    , text (bot.url ++ ", " ++ bot.description ++ "    :    " ++ (toString bot.state))
-    ]
-
-viewBotCard : Bot -> Html Msg
-viewBotCard bot =
     let
       botImg = img [src <| "https://robohash.org/" ++ bot.url, width 144, height 144] []
       suspectCards = List.map (\w -> viewCard <| toString w) bot.suspects

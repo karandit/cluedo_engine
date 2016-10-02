@@ -133,15 +133,23 @@ viewSecretCards suspectName weaponName locationName =
     ]
 
 viewCard : String -> Html Msg
-viewCard name =
-  img [src <| "img/" ++ name ++ ".png", width 144, height 180, title name] []
+viewCard =
+  viewCardWithSize 144 180
+
+viewCardSmall : String -> Html Msg
+viewCardSmall =
+  viewCardWithSize 80 100
+
+viewCardWithSize : Int -> Int -> String -> Html Msg
+viewCardWithSize w h name =
+  img [src <| "img/" ++ name ++ ".png", width w, height h, title name] []
 
 viewBot : Bot -> Html Msg
 viewBot bot =
     let
-      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 144, height 144] []
-      suspectCards = List.map (\w -> viewCard <| toString w) bot.suspects
-      weaponCards = List.map (\w -> viewCard <| toString w) bot.weapons
-      locationCards = List.map (\w -> viewCard <| toString w) bot.locations
+      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
+      suspectCards = List.map (\w -> viewCardSmall <| toString w) bot.suspects
+      weaponCards = List.map (\w -> viewCardSmall <| toString w) bot.weapons
+      locationCards = List.map (\w -> viewCardSmall <| toString w) bot.locations
     in
-      span [] ([botImg] ++ suspectCards  ++ locationCards ++ weaponCards)
+      span [] <| [botImg] ++ suspectCards  ++ locationCards ++ weaponCards

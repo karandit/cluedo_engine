@@ -1,7 +1,7 @@
 module RestDojo.Games.Cluedo.GameDontCheat exposing (tileDescriptor, Model, Msg, update, view)
 
 import Html exposing (Html, text, div, span, button, img)
-import Html.Attributes exposing (disabled, src, width, height)
+import Html.Attributes exposing (disabled, title, src, width, height)
 import Html.Events exposing (onClick)
 import Html.App
 import Http
@@ -71,7 +71,7 @@ update msg model =
         , bots = List.map (\bot -> {bot | state = WaitingToJoin}) model.bots}
       ! [Random.generate Shuffled gameGenerator]
 
-    Shuffled (randomness, _) ->
+    Shuffled (randomness, cards) ->
       {model
         | gameId = Just randomness.gameId
         , secret = Just randomness.secret}
@@ -103,14 +103,14 @@ view model =
   div [] [
     button [onClick StartGame, disabled model.started] [text "Start"]
     , viewSecret model.secret
-    , div [] (List.map viewBot model.bots)
+    , viewBots model.bots
   ]
 
 viewSecret : Maybe Secret -> Html Msg
 viewSecret maybeSecret =
   case maybeSecret of
     Nothing ->
-      viewSecretCards "Any" "Any" "Any"
+      viewSecretCards "None" "None" "None"
     Just secret ->
         viewSecretCards (toString secret.suspect) (toString secret.location) (toString secret.weapon)
 
@@ -118,19 +118,33 @@ viewSecretCards : String -> String -> String -> Html Msg
 viewSecretCards suspectName weaponName locationName =
     let
       viewSecretCard name =
-        img [src <| "img/" ++ name ++ ".png", width 80, height 125] []
+        img [src <| "img/" ++ name ++ ".png", width 80, height 100, title name] []
     in
       div [] [
-        span [] [
-          viewSecretCard suspectName
-          , viewSecretCard weaponName
-          , viewSecretCard locationName
+        div [] [
+          span [] [
+            viewSecretCard suspectName
+            , viewSecretCard weaponName
+            , viewSecretCard locationName
+          ]
+        ],
+        div [] [
+          span [] [
+          ]
         ]
-      ]
+    ]
+
+viewBots : List Bot -> Html Msg
+viewBots bots =
+    div [] <| List.map viewBot bots
 
 viewBot : Bot -> Html Msg
 viewBot bot =
   div [] [
-    img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
+    viewBotCard bot.url
     , text (bot.url ++ ", " ++ bot.description ++ "    :    " ++ (toString bot.state))
     ]
+
+viewBotCard : String -> Html Msg
+viewBotCard name =
+    img [src <| "https://robohash.org/" ++ name, width 80, height 80] []

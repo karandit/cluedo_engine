@@ -14,31 +14,31 @@ import RestDojo.Types exposing (..)
 
 -- types ---------------------------------------------------------------------------------------------------------------
 type Location =
-  Kitchen
-  | BallRoom
+  BedRoom
+  | Billiards
   | Conservatory
-  | DiningRoom
-  | BilliardRoom
+  | Kitchen
   | Library
   | Lounge
-  | Hall
-  | Study
+  | Stairs
+  | Studio
+  | TrophyHall
 
 type Suspect =
-  MsScarlett
-  | ProfPlum
-  | MrsPeacock
-  | RevGreen
-  | ColMustard
+  ColMustard
   | MrsWhite
+  | MsPeacock
+  | MsScarlett
+  | ProfPlum
+  | RevGreen
 
 type Weapon =
   Candlestick
-  | Dagger
-  | LeadPipe
+  | IcePick
+  | Poison
+  | Poker
   | Revolver
-  | Rope
-  | Spanner
+  | Shears
 
 type alias Secret = {
   weapon: Weapon
@@ -108,9 +108,9 @@ type alias Randomness = {
 gameGenerator: Generator (Randomness, List Card)
 gameGenerator =
   let
-    suspects = Array.fromList <| [MsScarlett, ProfPlum, MrsPeacock, RevGreen, ColMustard, MrsWhite]
-    weapons = Array.fromList <| [Candlestick, Dagger, LeadPipe, Revolver, Rope, Spanner]
-    locations = Array.fromList <| [Kitchen, BallRoom, Conservatory, DiningRoom, BilliardRoom, Library, Lounge, Hall, Study]
+    suspects = Array.fromList <| [MsScarlett, ProfPlum, MsPeacock, RevGreen, ColMustard, MrsWhite]
+    weapons = Array.fromList <| [Candlestick, IcePick, Poison, Poker, Revolver, Shears]
+    locations = Array.fromList <| [BedRoom, Billiards, Conservatory, Kitchen, Library, Lounge, Stairs, Studio, TrophyHall]
   in
     Random.map (\(randomness, cards) -> (randomness, Array.toList cards)) <|
     Random.map4 mapToRandomness
@@ -128,8 +128,8 @@ mapToRandomness gameId (maybeWeapon, leftWeapons) (maybeSuspect, leftSuspects) (
     let
       randomness = { gameId = gameId
         , secret = {
-          weapon = withDefault Rope maybeWeapon
-          , location = withDefault Hall maybeLocation
+          weapon = withDefault Revolver maybeWeapon
+          , location = withDefault Kitchen maybeLocation
           , suspect = withDefault MrsWhite maybeSuspect
         }
       }

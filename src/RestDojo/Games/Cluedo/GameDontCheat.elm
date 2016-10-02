@@ -102,8 +102,8 @@ view : Model -> Html Msg
 view model =
   div [] [
     button [onClick StartGame, disabled model.started] [text "Start"]
-    , viewSecret model.secret
-    , viewBots model.bots
+    , div [] [viewSecret model.secret]
+    , div [] <| List.map viewBotCard model.bots
   ]
 
 viewSecret : Maybe Secret -> Html Msg
@@ -116,23 +116,15 @@ viewSecret maybeSecret =
 
 viewSecretCards : String -> String -> String -> Html Msg
 viewSecretCards suspectName weaponName locationName =
-    let
-      viewSecretCard name =
-        img [src <| "img/" ++ name ++ ".png", width 80, height 100, title name] []
-    in
-      div [] [
-        div [] [
-          span [] [
-            viewSecretCard suspectName
-            , viewSecretCard weaponName
-            , viewSecretCard locationName
-          ]
-        ],
-        div [] [
-          span [] [
-          ]
-        ]
+    span [] [
+      viewCard suspectName
+      , viewCard weaponName
+      , viewCard locationName
     ]
+
+viewCard : String -> Html Msg
+viewCard name =
+  img [src <| "img/" ++ name ++ ".png", width 80, height 100, title name] []
 
 viewBots : List Bot -> Html Msg
 viewBots bots =
@@ -141,10 +133,16 @@ viewBots bots =
 viewBot : Bot -> Html Msg
 viewBot bot =
   div [] [
-    viewBotCard bot.url
+    viewBotCard bot
     , text (bot.url ++ ", " ++ bot.description ++ "    :    " ++ (toString bot.state))
     ]
 
-viewBotCard : String -> Html Msg
-viewBotCard name =
-    img [src <| "https://robohash.org/" ++ name, width 80, height 80] []
+viewBotCard : Bot -> Html Msg
+viewBotCard bot =
+    let
+      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
+      weaponCards = List.map (\w -> viewCard <| toString w) bot.weapons
+      suspectCards = List.map (\w -> viewCard <| toString w) bot.suspects
+      locationCards = List.map (\w -> viewCard <| toString w) bot.locations
+    in
+      span [] ([botImg] ++ weaponCards ++ suspectCards ++ locationCards)

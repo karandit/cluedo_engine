@@ -109,15 +109,24 @@ view model =
 viewSecret : Maybe Secret -> Html Msg
 viewSecret maybeSecret =
   case maybeSecret of
-    Nothing -> div [] [text "? ? ?"]
+    Nothing ->
+      viewSecretCards "Any" "Any" "Any"
     Just secret ->
-        div [] [
-          span [] [
-            img [src <| "img/" ++ (toString secret.suspect) ++ ".png", width 80, height 125] []
-            , text (toString secret.location)
-            , text (toString secret.weapon)
-            ]
+        viewSecretCards (toString secret.suspect) (toString secret.location) (toString secret.weapon)
+
+viewSecretCards : String -> String -> String -> Html Msg
+viewSecretCards suspectName weaponName locationName =
+    let
+      viewSecretCard name =
+        img [src <| "img/" ++ name ++ ".png", width 80, height 125] []
+    in
+      div [] [
+        span [] [
+          viewSecretCard suspectName
+          , viewSecretCard weaponName
+          , viewSecretCard locationName
         ]
+      ]
 
 viewBot : Bot -> Html Msg
 viewBot bot =

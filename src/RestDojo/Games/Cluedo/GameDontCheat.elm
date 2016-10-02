@@ -50,17 +50,17 @@ initBot player = {
     , url = player.url
     , description = ""
     , state = None
-    , weapons = [Revolver, Rope]
-    , suspects = [RevGreen, MrsWhite]
-    , locations = [Kitchen, BallRoom, Hall]
+    , weapons = []
+    , suspects = []
+    , locations = []
   }
 
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =
   StartGame
   | Shuffled Randomness
-  | BotStartGameSucceed BotId String
-  | BotStartGameFail BotId Http.Error
+  | BotJoinSucceed BotId String
+  | BotJoinFail BotId Http.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -77,13 +77,13 @@ update msg model =
         , secret = Just randomness.secret}
       ! List.map (startBot randomness.gameId) model.bots
 
-    BotStartGameSucceed botId result ->
+    BotJoinSucceed botId result ->
       let
         updater bot = {bot | state = Joined, description = result}
       in
         (updateBot model botId updater) ! []
 
-    BotStartGameFail botId reason ->
+    BotJoinFail botId reason ->
       let
         updater bot = {bot | state = JoinFailed (toString reason)}
       in
@@ -95,7 +95,7 @@ updateBot model botId updater =
 
 startBot : GameId -> Bot -> Cmd Msg
 startBot gameId bot =
-      Task.perform (BotStartGameFail bot.id) (BotStartGameSucceed bot.id) (API.startGame gameId bot)
+      Task.perform (BotJoinFail bot.id) (BotJoinSucceed bot.id) (API.startGame gameId bot)
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg

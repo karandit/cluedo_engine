@@ -23,7 +23,7 @@ main =
 --PUBLIC ---------------------------------------------------------------------------------------------------------------
 tileDescriptor : (Model -> a) -> TileDescriptor a
 tileDescriptor modelWrapper = {
-  title = "Don't cheat",
+  title = "Cluedo",
   isDisabled = List.isEmpty,
   initGame = \players -> modelWrapper (initModel players)
  }
@@ -64,7 +64,7 @@ type Msg =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case Debug.log "Dont cheat" msg of
+  case msg of
     StartGame ->
       {model
         | started = True
@@ -72,22 +72,44 @@ update msg model =
       ! [Random.generate Shuffled gameGenerator]
 
     Shuffled (randomness, cards) ->
-      {model
-        | gameId = Just randomness.gameId
-        , secret = Just randomness.secret}
-      ! List.map (startBot randomness.gameId) model.bots
+      let
+        botIds = List.map (\bot -> bot.id) model.bots
+        botIdsAndCards = zipToLongest botIds cards
+
+        addCardToBot bot card =
+          case card of
+              WeaponCard weapon -> { bot | weapons = weapon :: bot.weapons}
+              SuspectCard suspect -> { bot | suspects = suspect :: bot.suspects}
+              LocationCard location -> { bot | locations = location :: bot.locations}
+
+        findBotAndAddCard (botId, card) bots =
+          List.map (\bot -> if (bot.id == botId) then (addCardToBot bot card) else bot) bots
+
+        updatedModel = {model
+          | gameId = Just randomness.gameId
+          , secret = Just randomness.secret
+          , bots = List.foldl (findBotAndAddCard) model.bots botIdsAndCards}
+      in
+        updatedModel ! List.map (startBot randomness.gameId) updatedModel.bots
 
     BotJoinSucceed botId result ->
-      let
-        updater bot = {bot | state = Joined, description = result}
-      in
-        (updateBot model botId updater) ! []
+        (updateBot model botId (\bot -> {bot | state = Joined, description = result})) ! []
 
     BotJoinFail botId reason ->
-      let
-        updater bot = {bot | state = JoinFailed (toString reason)}
-      in
-        (updateBot model botId updater) ! []
+        (updateBot model botId (\bot -> {bot | state = JoinFailed (toString reason)})) ! []
+
+zipToLongest : List Int -> List Card -> List (Int, Card)
+zipToLongest botIds cards =
+    zipToLongestH [] botIds botIds cards
+
+zipToLongestH : List (a, b) -> List a -> List a -> List b -> List (a, b)
+zipToLongestH acc origShorter shorter longer =
+  case longer of
+    l::ls ->
+        case shorter of
+          s::ss -> zipToLongestH ((s, l) :: acc) origShorter ss ls
+          []  -> zipToLongestH acc origShorter origShorter longer
+    [] -> acc
 
 updateBot : Model -> Int -> (Bot -> Bot) -> Model
 updateBot model botId updater =
@@ -124,7 +146,7 @@ viewSecretCards suspectName weaponName locationName =
 
 viewCard : String -> Html Msg
 viewCard name =
-  img [src <| "img/" ++ name ++ ".png", width 80, height 100, title name] []
+  img [src <| "img/" ++ name ++ ".png", width 144, height 180, title name] []
 
 viewBots : List Bot -> Html Msg
 viewBots bots =
@@ -140,9 +162,9 @@ viewBot bot =
 viewBotCard : Bot -> Html Msg
 viewBotCard bot =
     let
-      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
-      weaponCards = List.map (\w -> viewCard <| toString w) bot.weapons
+      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 144, height 144] []
       suspectCards = List.map (\w -> viewCard <| toString w) bot.suspects
+      weaponCards = List.map (\w -> viewCard <| toString w) bot.weapons
       locationCards = List.map (\w -> viewCard <| toString w) bot.locations
     in
-      span [] ([botImg] ++ weaponCards ++ suspectCards ++ locationCards)
+      span [] ([botImg] ++ suspectCards  ++ locationCards ++ weaponCards)

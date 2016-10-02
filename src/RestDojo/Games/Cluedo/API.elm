@@ -1,8 +1,8 @@
-module RestDojo.Games.Cluedo.API exposing (Location(..), Suspect(..), Weapon(..), Secret, Bot, BotId, State(..), Randomness,
+module RestDojo.Games.Cluedo.API exposing (Location(..), Suspect(..), Weapon(..), Card(..), Secret, Bot, BotId, State(..), Randomness,
   startGame, gameGenerator)
 
 import Maybe exposing (withDefault)
-import Array exposing (fromList)
+import Array exposing (Array)
 import Http exposing (Error, Body, getString, post, empty)
 import Task exposing (Task)
 import Json.Decode as Json exposing (..)
@@ -80,6 +80,7 @@ startGame gameId bot =
   in
     Http.post botDecoder url (startGamePayload bot)
 
+-- Json decoders/encoders ----------------------------------------------------------------------------------------------
 startGamePayload : Bot -> Body
 startGamePayload bot =
   let
@@ -94,7 +95,6 @@ startGamePayload bot =
   in
     Http.string payload
 
--- Json decoders -------------------------------------------------------------------------------------------------------
 botDecoder : Decoder String
 botDecoder =
    ("version" := Json.string)
@@ -105,13 +105,14 @@ type alias Randomness = {
     , secret: Secret
   }
 
-gameGenerator: Generator Randomness
+gameGenerator: Generator (Randomness, List Card)
 gameGenerator =
   let
     suspects = Array.fromList <| [MsScarlett, ProfPlum, MrsPeacock, RevGreen, ColMustard, MrsWhite]
     weapons = Array.fromList <| [Candlestick, Dagger, LeadPipe, Revolver, Rope, Spanner]
     locations = Array.fromList <| [Kitchen, BallRoom, Conservatory, DiningRoom, BilliardRoom, Library, Lounge, Hall, Study]
   in
+    Random.map (\(randomness, cards) -> (randomness, Array.toList cards)) <|
     Random.map4 mapToRandomness
       (Random.int 1 Random.maxInt)
       (RandomExtra.choose weapons)
@@ -119,15 +120,22 @@ gameGenerator =
       (RandomExtra.choose locations)
 
 mapToRandomness: GameId
-  -> (Maybe Weapon, Array.Array Weapon)
-  -> (Maybe Suspect, Array.Array Suspect)
-  -> (Maybe Location, Array.Array Location)
-  -> Randomness
-mapToRandomness gameId (maybeWeapon, _) (maybeSuspect, _) (maybeLocation, _) =
-   { gameId = gameId
-   , secret = {
-      weapon = withDefault Rope maybeWeapon
-      , location = withDefault Hall maybeLocation
-      , suspect = withDefault MrsWhite maybeSuspect
-    }
- }
+  -> (Maybe Weapon, Array Weapon)
+  -> (Maybe Suspect, Array Suspect)
+  -> (Maybe Location, Array Location)
+  -> (Randomness, Array Card)
+mapToRandomness gameId (maybeWeapon, leftWeapons) (maybeSuspect, leftSuspects) (maybeLocation, leftLocations) =
+    let
+      randomness = { gameId = gameId
+        , secret = {
+          weapon = withDefault Rope maybeWeapon
+          , location = withDefault Hall maybeLocation
+          , suspect = withDefault MrsWhite maybeSuspect
+        }
+      }
+      suspectCards = Array.map SuspectCard leftSuspects
+      locationCards = Array.map LocationCard leftLocations
+      weaponCards = Array.map WeaponCard leftWeapons
+      leftCards = suspectCards `Array.append` locationCards `Array.append` weaponCards
+      in
+        (randomness, leftCards)

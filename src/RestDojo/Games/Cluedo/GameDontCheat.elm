@@ -58,7 +58,7 @@ initBot player = {
 --UPDATE----------------------------------------------------------------------------------------------------------------
 type Msg =
   StartGame
-  | Shuffled Randomness
+  | Shuffled (Randomness, List Card)
   | BotJoinSucceed BotId String
   | BotJoinFail BotId Http.Error
 
@@ -71,7 +71,7 @@ update msg model =
         , bots = List.map (\bot -> {bot | state = WaitingToJoin}) model.bots}
       ! [Random.generate Shuffled gameGenerator]
 
-    Shuffled randomness ->
+    Shuffled (randomness, _) ->
       {model
         | gameId = Just randomness.gameId
         , secret = Just randomness.secret}

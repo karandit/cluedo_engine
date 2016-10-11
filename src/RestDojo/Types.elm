@@ -3,8 +3,10 @@ module RestDojo.Types exposing (..)
 -- MODEL ---------------------------------------------------------------------------------------------------------------
 type alias GameId = Int
 
+type alias PlayerId = Int
+
 type alias Player = {
-  id : Int,
+  id : PlayerId,
   url : String
 }
 

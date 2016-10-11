@@ -16,7 +16,14 @@ import RestDojo.Games.Cluedo.API as API exposing (..)
 main : Program Never
 main =
       Html.App.program {
-        init = initModel [Player 0 "http://localhost:3001"] ! [],
+        init = initModel [
+          Player 0 "http://localhost:3001"
+          , Player 1 "http://localhost:3002"
+          , Player 2 "http://localhost:3003"
+          -- , Player 3 "http://localhost:3004"
+          -- , Player 4 "http://localhost:3005"
+          -- , Player 5 "http://localhost:3006"
+          ] ! [],
         update = update,
         view = view,
         subscriptions = \_ -> Sub.none}
@@ -30,11 +37,21 @@ tileDescriptor modelWrapper = {
  }
 
 --MODEL-----------------------------------------------------------------------------------------------------------------
+type alias Round = {
+  nr : Int
+  , askedby : PlayerId
+  , question : Question
+  , answers : List (PlayerId, Maybe Card)
+  }
+
 type alias Model = {
   started : Bool
   , gameId : Maybe GameId
   , secret : Maybe Secret
   , bots : List Bot
+  , countAckBots : Int
+  , nextRoundNr : Int
+  , rounds : List Round
   }
 
 initModel : List Player -> Model
@@ -43,6 +60,9 @@ initModel players = {
   , gameId = Nothing
   , secret = Nothing
   , bots = List.map initBot players
+  , countAckBots = 0
+  , nextRoundNr = 0
+  , rounds = []
  }
 
 initBot : Player -> Bot
@@ -62,10 +82,11 @@ type Msg =
   | Shuffled (Randomness, List Card)
   | BotJoinSucceed BotId String
   | BotJoinFail BotId Http.Error
+  | BotGaveAnswer BotId String
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  case Debug.log "Cluedo update" msg of
     StartGame ->
       {model
         | started = True
@@ -94,7 +115,17 @@ update msg model =
         updatedModel ! List.map (startBot randomness.gameId) updatedModel.bots
 
     BotJoinSucceed botId result ->
-        (updateBot model botId (\bot -> {bot | state = Joined, description = result})) ! []
+        let
+          updatedModel = updateBot model botId (\bot -> {bot | state = Joined, description = result})
+          newModel = {updatedModel | countAckBots = updatedModel.countAckBots + 1 }
+          newCmds = if newModel.countAckBots == List.length newModel.bots
+            then [waitBotToAnswer (Maybe.withDefault 0 model.gameId) "http://localhost:3001"]
+            else []
+        in
+          newModel ! newCmds
+
+    BotGaveAnswer botId result ->
+        model ! []
 
     BotJoinFail botId reason ->
         (updateBot model botId (\bot -> {bot | state = JoinFailed (toString reason)})) ! []
@@ -106,6 +137,13 @@ updateBot model botId updater =
 startBot : GameId -> Bot -> Cmd Msg
 startBot gameId bot =
       Task.perform (BotJoinFail bot.id) (BotJoinSucceed bot.id) (API.startGame gameId bot)
+
+waitBotToAnswer : GameId -> String -> Cmd Msg
+waitBotToAnswer gameId botUrl =
+      let
+        question = { weapon = Revolver, location = Kitchen, suspect = RevGreen}
+      in
+        Task.perform (BotJoinFail 0) (BotGaveAnswer 0) (API.giveAnswer gameId botUrl Interrogation question)
 
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg
@@ -148,8 +186,7 @@ viewBot : Bot -> Html Msg
 viewBot bot =
     let
       botImg = img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
-      suspectCards = List.map (\w -> viewCardSmall <| toString w) bot.suspects
-      weaponCards = List.map (\w -> viewCardSmall <| toString w) bot.weapons
-      locationCards = List.map (\w -> viewCardSmall <| toString w) bot.locations
+      toCard a = if (bot.state == Joined) then toString a else "None"
+      cards = List.map (\w -> viewCardSmall <| toCard w)
     in
-      span [] <| [botImg] ++ suspectCards  ++ locationCards ++ weaponCards
+      span [] <| [botImg] ++ (cards bot.suspects)  ++ (cards bot.locations) ++ (cards bot.weapons)

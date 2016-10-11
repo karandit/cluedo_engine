@@ -1,5 +1,7 @@
-module RestDojo.Games.Cluedo.API exposing (Location(..), Suspect(..), Weapon(..), Card(..), Secret, Bot, BotId, State(..), Randomness,
-  startGame, gameGenerator)
+module RestDojo.Games.Cluedo.API exposing (
+  Location(..), Suspect(..), Weapon(..), Card(..)
+  , QuestionType(..), Question, Secret, Bot, BotId, State(..), Randomness,
+  startGame, giveAnswer, gameGenerator)
 
 import Maybe exposing (withDefault)
 import Array exposing (Array)
@@ -40,7 +42,11 @@ type Weapon =
   | Revolver
   | Shears
 
-type alias Secret = {
+type alias Secret = Question
+
+type QuestionType = Interrogation | Accusation
+
+type alias Question = {
   weapon: Weapon
   , location: Location
   , suspect: Suspect
@@ -80,6 +86,13 @@ startGame gameId bot =
   in
     Http.post botDecoder url (startGamePayload bot)
 
+giveAnswer : GameId -> String -> QuestionType -> Question -> Task Error String
+giveAnswer gameId botUrl questionType question =
+  let
+    url = botUrl ++ "/" ++ (toString gameId) ++ "/giveAnswer"
+  in
+    Http.post answerDecoder url (giveAnswerPayload questionType question)
+
 -- Json decoders/encoders ----------------------------------------------------------------------------------------------
 startGamePayload : Bot -> Body
 startGamePayload bot =
@@ -88,9 +101,9 @@ startGamePayload bot =
       [
       ("playerId", JsonEnc.int bot.id)
       , ("countOfPlayers", JsonEnc.int 12)
-      , ("weapons", JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) bot.weapons) )
-      , ("locations",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) bot.locations) )
-      , ("suspects",  JsonEnc.list (List.map (\loc -> JsonEnc.string <| toString <| loc) bot.suspects) )
+      , ("weapons", JsonEnc.list (List.map (\x -> JsonEnc.string <| toString <| x) bot.weapons) )
+      , ("locations",  JsonEnc.list (List.map (\x -> JsonEnc.string <| toString <| x) bot.locations) )
+      , ("suspects",  JsonEnc.list (List.map (\x -> JsonEnc.string <| toString <| x) bot.suspects) )
       ]
   in
     Http.string payload
@@ -98,6 +111,24 @@ startGamePayload bot =
 botDecoder : Decoder String
 botDecoder =
    ("version" := Json.string)
+
+giveAnswerPayload : QuestionType -> Question -> Body
+giveAnswerPayload questionType question =
+  Http.string <| JsonEnc.encode 2 <| JsonEnc.object
+      [
+      ("askedBy", JsonEnc.int 42)
+      , ("question", JsonEnc.object [
+        ("type", JsonEnc.string <| toString <| questionType)
+        , ("weapon", JsonEnc.string <| toString <| question.weapon)
+        , ("location",  JsonEnc.string <| toString <| question.location)
+        , ("suspect",  JsonEnc.string <| toString <| question.suspect)
+        ])
+      ]
+
+answerDecoder : Decoder String
+answerDecoder =
+   ("card" := Json.string)
+
 
 -- Random Generator ----------------------------------------------------------------------------------------------------
 type alias Randomness = {

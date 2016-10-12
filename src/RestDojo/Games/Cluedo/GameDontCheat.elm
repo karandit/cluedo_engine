@@ -1,7 +1,7 @@
 module RestDojo.Games.Cluedo.GameDontCheat exposing (tileDescriptor, Model, Msg, update, view)
 
 import Html exposing (Html, text, div, span, button, img)
-import Html.Attributes exposing (disabled, title, src, width, height)
+import Html.Attributes exposing (disabled, title, src, width, height, style)
 import Html.Events exposing (onClick)
 import Html.App
 import Http
@@ -148,7 +148,7 @@ waitBotToAnswer gameId botUrl =
 --VIEW------------------------------------------------------------------------------------------------------------------
 view : Model -> Html Msg
 view model =
-  div [] [
+  div [style [ ("backgroundColor", "#262c37")]] [
     button [onClick StartGame, disabled model.started] [text "Start"]
     , div [] [viewSecret model.secret]
     , div [] <| List.map viewBot model.bots
@@ -185,7 +185,8 @@ viewCardWithSize w h name =
 viewBot : Bot -> Html Msg
 viewBot bot =
     let
-      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80] []
+      roundStyle = style [ ("backgroundColor", "#ffffff"), ("border-radius", "50%"), ("border", "3px solid #7E5AE2")]
+      botImg = img [src <| "https://robohash.org/" ++ bot.url, width 80, height 80, roundStyle] []
       toCard a = if (bot.state == Joined) then toString a else "None"
       cards = List.map (\w -> viewCardSmall <| toCard w)
     in

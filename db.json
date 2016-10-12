@@ -1,0 +1,61 @@
+{
+  "dojos": [
+    { "id": 11, "state": "running"},
+    { "id": 9, "state": "past"},
+    { "id": 8, "state": "past"},
+    { "id": 12, "state": "upcoming"}
+  ],
+  "teams": [
+    {"id":0,
+      "name": "Matadors",
+      "points": 0,
+      "url": "http://localhost:3001",
+      "vcs": "github",
+      "captain": "vincent",
+      "members": [],
+      "dojoId": 11
+    },
+    {
+      "id":1,
+      "name": "Torreadors",
+      "points": 0,
+      "url": "http://localhost:3001",
+      "captain": "buz",
+      "members": [],
+      "dojoId": 11
+    }
+  ],
+  "events": [
+    {"gameWonBy": 0, "dojoId": 11, "gameId":13},
+    {"gameWonBy": 1, "dojoId": 11, "gameId":12},
+    {"gameWonBy": 0, "dojoId": 11, "gameId":11},
+    {"gameWonBy": null, "dojoId": 11, "gameId":10}
+  ],
+  "games": [
+    {
+      "id":1,
+      "dojoId": 11,
+      "secret": {
+        "weapon": "Revolver",
+        "location": "Kitchen",
+        "suspect": "ColMustard"
+      },
+      "playedBy": [0, 1, 2],
+      "wonBy": 1,
+      "rounds": [
+        {
+          "asked": {"by": 0, "type": "Interrogation", "question": {"weapon": "Rope","location": "Lounge","suspect": "MrsWhite"}},
+          "answered": [{"by": 1, "answer": null}, {"by": 2, "answer": "Rope"}]
+        },
+        {
+          "asked": {"by": 1, "type": "Interrogation", "question": {"weapon": "Rope","location": "Revolver","suspect": "ColMustard"}},
+          "answered": [{"by": 2, "answer": null}, {"by": 3, "cheated": "Gave wrong answer"}, {"by": 0, "answer": "ColMustard"}]
+        },
+        {
+          "asked": {"by": 1, "type": "Interrogation", "question": {"weapon": "Rope","location": "Revolver","suspect": "ColMustard"}},
+          "answered": [{"by": 2, "answer": null}, {"by": 3, "answer": null}, {"by": 0, "answer": "ColMustard"}]
+        }
+      ]
+    }
+  ]
+}

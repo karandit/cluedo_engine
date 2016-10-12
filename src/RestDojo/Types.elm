@@ -7,6 +7,7 @@ type alias PlayerId = Int
 
 type alias Player = {
   id : PlayerId,
+  color : String, 
   url : String
 }
 
